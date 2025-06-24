@@ -34,12 +34,12 @@ function Slider() {
       backgroundColor: '#FFD392' // bg-jnpr-spice
     },
     {
-      image: '/img/slider/vegetaux.png', // Placeholder pour slide 3
-      alt: 'Élément décoratif',
+      image: '/img/slider/intense.png', // Placeholder pour slide 3
+      alt: 'Intense',
       scale: 1.2,
       translateY: '-6%',
       translateX: '0%',
-      backgroundColor: '#dcfce7' // bg-green-100
+      backgroundColor: '#FDE9FB' // bg-pink-100
     }
   ]
 
@@ -251,7 +251,7 @@ function Slider() {
               <div className="text-center" style={{
                 marginBottom: 'clamp(1rem, 3vh, 2rem)'
               }}>
-                <h3 className="font-formula font-bold text-black" style={{
+                <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
                 }}>
                   Léger et rafraîchissant
@@ -298,7 +298,7 @@ function Slider() {
               <div className="text-center" style={{
                 marginBottom: 'clamp(1rem, 3vh, 2rem)'
               }}>
-                <h3 className="font-formula font-bold text-black" style={{
+                <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
                 }}>
                   Chaleureux et épicé
@@ -309,14 +309,47 @@ function Slider() {
 
           {/* Slide 3 - Exemple */}
           <div className="w-full h-full flex-shrink-0 relative">
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="font-formula font-light text-black text-3xl mb-4">
-                  Slide 3
+            {/* Background texture */}
+            <div 
+              className="absolute inset-0 opacity-60"
+              style={{
+                backgroundImage: 'url(/img/slider/texture-bg.png)',
+                backgroundSize: '100% 100%',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
+            
+            {/* Contenu texte seulement */}
+            <div className="relative z-10 h-full flex flex-col justify-between py-8" style={{
+              paddingLeft: 'clamp(1rem, 4vw, 2rem)',
+              paddingRight: 'clamp(1rem, 4vw, 2rem)'
+            }}>
+              {/* Titre en haut */}
+              <div className="text-center" style={{
+                marginTop: 'clamp(0.5rem, 2vh, 1rem)'
+              }}>
+                <h2 className="font-formula font-light text-black leading-tight" style={{
+                  fontSize: 'clamp(1.5rem, 4vw, 3rem)'
+                }}>
+                  Dans quelle ambiance<br />êtes-vous?
                 </h2>
-                <p className="font-formula font-bold text-black text-xl">
-                  Contenu à définir
-                </p>
+              </div>
+
+              {/* Zone centrale vide - les images sont dans les containers fixes */}
+              <div className="flex-1 relative">
+                {/* Cette zone est maintenant utilisée par les containers fixes */}
+              </div>
+
+              {/* Texte en bas */}
+              <div className="text-center" style={{
+                marginBottom: 'clamp(1rem, 3vh, 2rem)'
+              }}>
+                <h3 className="font-suisse-mono font-normal text-black" style={{
+                  fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
+                }}>
+                  Élégant et intense
+                </h3>
               </div>
             </div>
           </div>
