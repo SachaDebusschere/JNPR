@@ -18,9 +18,6 @@ function App() {
 
   return (
     <div ref={appRef} className="min-h-screen bg-jnpr-secondary">
-      <Hero />
-      <ButtonDemo />
-      <LinkDemo />
       <Slider />
     </div>
   )

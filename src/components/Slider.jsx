@@ -20,23 +20,23 @@ function Slider() {
     {
       image: '/img/slider/vegetaux.png',
       alt: 'Végétaux',
-      scale: 1.2,
-      translateY: '-10%',
+      scale: 1.0,
+      translateY: '-8%',
       translateX: '-1%',
       backgroundColor: '#F4FFE3' // Couleur de background pour cette slide
     },
     {
       image: '/img/slider/epices.png',
       alt: 'Épices',
-      scale: 1.2,
-      translateY: '-8%',
+      scale: 1.0,
+      translateY: '-7%',
       translateX: '+1%',
       backgroundColor: '#FFD392' // bg-jnpr-spice
     },
     {
       image: '/img/slider/intense.png', // Placeholder pour slide 3
       alt: 'Intense',
-      scale: 1.2,
+      scale: 1.0,
       translateY: '-6%',
       translateX: '0%',
       backgroundColor: '#FDE9FB' // bg-pink-100
@@ -156,7 +156,7 @@ function Slider() {
       gsap.set(decorativeElementRef.current, {
         x: element.translateX,
         y: element.translateY,
-        scale: element.scale
+        scale: element.scale // Maintenant 1.0 au lieu de 1.2
       })
       
       // Initialiser la couleur de background
@@ -192,7 +192,7 @@ function Slider() {
             className="w-full h-full object-contain"
             style={{
               objectPosition: 'center center',
-              transform: 'scale(0.8)'
+              transform: 'scale(0.65)'
             }}
           />
         </div>
@@ -208,6 +208,39 @@ function Slider() {
               objectPosition: 'center center'
             }}
           />
+        </div>
+
+        {/* Titre fixe - au-dessus de tout */}
+        <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
+          <div className="text-center" style={{
+            marginTop: 'clamp(0.5rem, 1.5vh, 1rem)'
+          }}>
+            <h2 className="font-formula font-light text-black leading-tight" style={{
+              fontSize: 'clamp(1.5rem, 4vw, 3rem)'
+            }}>
+              Dans quelle ambiance<br />êtes-vous ?
+            </h2>
+          </div>
+        </div>
+
+        {/* Indicateurs de pagination fixes - au-dessus de tout */}
+        <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
+          <div className="flex justify-center pb-8" style={{ pointerEvents: 'auto' }}>
+            <div className="flex space-x-3">
+              {Array.from({ length: totalSlides }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    currentSlide === index 
+                      ? 'bg-black scale-125' 
+                      : 'bg-black/30 hover:bg-black/50'
+                  }`}
+                  aria-label={`Aller à la slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Slider container - textures et textes seulement */}
@@ -227,29 +260,13 @@ function Slider() {
             />
             
             {/* Contenu texte seulement */}
-            <div className="relative z-10 h-full flex flex-col justify-between py-8" style={{
+            <div className="relative z-10 h-full flex items-end justify-center py-8" style={{
               paddingLeft: 'clamp(1rem, 4vw, 2rem)',
               paddingRight: 'clamp(1rem, 4vw, 2rem)'
             }}>
-              {/* Titre en haut */}
-              <div className="text-center" style={{
-                marginTop: 'clamp(0.5rem, 2vh, 1rem)'
-              }}>
-                <h2 className="font-formula font-light text-black leading-tight" style={{
-                  fontSize: 'clamp(1.5rem, 4vw, 3rem)'
-                }}>
-                  Dans quelle ambiance<br />êtes-vous?
-                </h2>
-              </div>
-
-              {/* Zone centrale vide - les images sont dans les containers fixes */}
-              <div className="flex-1 relative">
-                {/* Cette zone est maintenant utilisée par les containers fixes */}
-              </div>
-
               {/* Texte en bas */}
               <div className="text-center" style={{
-                marginBottom: 'clamp(1rem, 3vh, 2rem)'
+                marginBottom: 'clamp(3rem, 6vh, 4rem)' // Plus d'espace pour les points de pagination
               }}>
                 <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
@@ -274,29 +291,13 @@ function Slider() {
             />
             
             {/* Contenu texte seulement */}
-            <div className="relative z-10 h-full flex flex-col justify-between py-8" style={{
+            <div className="relative z-10 h-full flex items-end justify-center py-8" style={{
               paddingLeft: 'clamp(1rem, 4vw, 2rem)',
               paddingRight: 'clamp(1rem, 4vw, 2rem)'
             }}>
-              {/* Titre en haut */}
-              <div className="text-center" style={{
-                marginTop: 'clamp(0.5rem, 2vh, 1rem)'
-              }}>
-                <h2 className="font-formula font-light text-black leading-tight" style={{
-                  fontSize: 'clamp(1.5rem, 4vw, 3rem)'
-                }}>
-                  Dans quelle ambiance<br />êtes-vous?
-                </h2>
-              </div>
-
-              {/* Zone centrale vide - les images sont dans les containers fixes */}
-              <div className="flex-1 relative">
-                {/* Cette zone est maintenant utilisée par les containers fixes */}
-              </div>
-
               {/* Texte en bas */}
               <div className="text-center" style={{
-                marginBottom: 'clamp(1rem, 3vh, 2rem)'
+                marginBottom: 'clamp(3rem, 6vh, 4rem)' // Plus d'espace pour les points de pagination
               }}>
                 <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
@@ -321,29 +322,13 @@ function Slider() {
             />
             
             {/* Contenu texte seulement */}
-            <div className="relative z-10 h-full flex flex-col justify-between py-8" style={{
+            <div className="relative z-10 h-full flex items-end justify-center py-8" style={{
               paddingLeft: 'clamp(1rem, 4vw, 2rem)',
               paddingRight: 'clamp(1rem, 4vw, 2rem)'
             }}>
-              {/* Titre en haut */}
-              <div className="text-center" style={{
-                marginTop: 'clamp(0.5rem, 2vh, 1rem)'
-              }}>
-                <h2 className="font-formula font-light text-black leading-tight" style={{
-                  fontSize: 'clamp(1.5rem, 4vw, 3rem)'
-                }}>
-                  Dans quelle ambiance<br />êtes-vous?
-                </h2>
-              </div>
-
-              {/* Zone centrale vide - les images sont dans les containers fixes */}
-              <div className="flex-1 relative">
-                {/* Cette zone est maintenant utilisée par les containers fixes */}
-              </div>
-
               {/* Texte en bas */}
               <div className="text-center" style={{
-                marginBottom: 'clamp(1rem, 3vh, 2rem)'
+                marginBottom: 'clamp(3rem, 6vh, 4rem)' // Plus d'espace pour les points de pagination
               }}>
                 <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
