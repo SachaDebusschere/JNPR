@@ -18,7 +18,7 @@ function Slider() {
   // Configuration des éléments décoratifs par slide
   const decorativeElements = [
     {
-      image: '/img/slider/vegetaux.png',
+      image: '/img/slider/Categories_PNG/vegetaux.png',
       alt: 'Végétaux',
       scale: 1.0,
       translateY: '-8%',
@@ -26,7 +26,7 @@ function Slider() {
       backgroundColor: '#F4FFE3' // Couleur de background pour cette slide
     },
     {
-      image: '/img/slider/epices.png',
+      image: '/img/slider/Categories_PNG/epices.png',
       alt: 'Épices',
       scale: 1.0,
       translateY: '-7%',
@@ -34,7 +34,7 @@ function Slider() {
       backgroundColor: '#FFD392' // bg-jnpr-spice
     },
     {
-      image: '/img/slider/intense.png', // Placeholder pour slide 3
+      image: '/img/slider/Categories_PNG/intense.png', // Placeholder pour slide 3
       alt: 'Intense',
       scale: 1.0,
       translateY: '-6%',
@@ -187,7 +187,7 @@ function Slider() {
         {/* Verre fixe - en arrière-plan */}
         <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
           <img 
-            src="/img/slider/verre.png" 
+            src="/img/slider/Categories_PNG/verre.png" 
             alt="Verre cocktail" 
             className="w-full h-full object-contain"
             style={{
@@ -201,7 +201,7 @@ function Slider() {
         <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
           <img 
             ref={decorativeElementRef}
-            src="/img/slider/vegetaux.png" 
+            src="/img/slider/Categories_PNG/vegetaux.png" 
             alt="Végétaux" 
             className="w-full h-full object-contain"
             style={{
@@ -215,10 +215,10 @@ function Slider() {
           <div className="text-center" style={{
             marginTop: 'clamp(0.5rem, 1.5vh, 1rem)'
           }}>
-            <h2 className="font-formula font-light text-black leading-tight" style={{
-              fontSize: 'clamp(1.5rem, 4vw, 3rem)'
+            <h2 className="font-formula font-bold text-black leading-tight" style={{
+              fontSize: 'clamp(2.2rem, 4vw, 3rem)'
             }}>
-              Dans quelle ambiance<br />êtes-vous ?
+              DANS QUELLE AMBIANCE<br />ÊTES-VOUS ?
             </h2>
           </div>
         </div>
@@ -250,9 +250,9 @@ function Slider() {
           <div className="w-full h-full flex-shrink-0 relative">
             {/* Background texture */}
             <div 
-              className="absolute inset-0 opacity-60"
+              className="absolute inset-0 opacity-90"
               style={{
-                backgroundImage: 'url(/img/slider/texture-bg.png)',
+                backgroundImage: 'url(/img/slider/Categories_PNG/texture-bg.png)',
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
@@ -271,7 +271,7 @@ function Slider() {
                 <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
                 }}>
-                  Léger et rafraîchissant
+                  LÉGER ET RAFRAÎCHISSANT
                 </h3>
               </div>
             </div>
@@ -281,9 +281,9 @@ function Slider() {
           <div className="w-full h-full flex-shrink-0 relative">
             {/* Background texture */}
             <div 
-              className="absolute inset-0 opacity-60"
+              className="absolute inset-0 opacity-90"
               style={{
-                backgroundImage: 'url(/img/slider/texture-bg.png)',
+                backgroundImage: 'url(/img/slider/Categories_PNG/texture-bg.png)',
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
@@ -302,7 +302,7 @@ function Slider() {
                 <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
                 }}>
-                  Chaleureux et épicé
+                  CHALEUREUX ET ÉPICÉ
                 </h3>
               </div>
             </div>
@@ -312,9 +312,9 @@ function Slider() {
           <div className="w-full h-full flex-shrink-0 relative">
             {/* Background texture */}
             <div 
-              className="absolute inset-0 opacity-60"
+              className="absolute inset-0 opacity-90"
               style={{
-                backgroundImage: 'url(/img/slider/texture-bg.png)',
+                backgroundImage: 'url(/img/slider/Categories_PNG/texture-bg.png)',
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
@@ -333,7 +333,7 @@ function Slider() {
                 <h3 className="font-suisse-mono font-normal text-black" style={{
                   fontSize: 'clamp(1.25rem, 3.5vw, 2.5rem)'
                 }}>
-                  Élégant et intense
+                  ÉLÉGANT ET INTENSE
                 </h3>
               </div>
             </div>
