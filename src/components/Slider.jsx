@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { gsap } from 'gsap'
 import Button from './Button'
+import Header from './Header'
 
 // TODO: Ajouter Draggable plugin plus tard
 // import { Draggable } from 'gsap/Draggable'
@@ -24,24 +25,24 @@ function Slider() {
     {
       image: '/img/slider/Categories_PNG/vegetaux.png',
       alt: 'Végétaux',
-      scale: 1.0,
-      translateY: '-8%',
-      translateX: '-1%',
+      scale: 0.8,
+      translateY: '-2%',
+      translateX: '0%',
       backgroundColor: '#F4FFE3'
     },
     {
       image: '/img/slider/Categories_PNG/epices.png',
       alt: 'Épices',
-      scale: 1.0,
-      translateY: '-7%',
+      scale: 0.8,
+      translateY: '-2%',
       translateX: '+1%',
       backgroundColor: '#FFD392'
     },
     {
       image: '/img/slider/Categories_PNG/intense.png',
       alt: 'Intense',
-      scale: 1.0,
-      translateY: '-6%',
+      scale: 0.8,
+      translateY: '-3%',
       translateX: '0%',
       backgroundColor: '#FDE9FB'
     }
@@ -93,6 +94,24 @@ function Slider() {
   // Choisir la configuration selon la question actuelle
   const decorativeElements = currentQuestion === 'ambiance' ? ambianceElements : occasionsElements
 
+  // Configuration des couleurs du titre selon la slide
+  const getTitleColors = () => {
+    if (currentQuestion !== 'ambiance') return { primary: '#151515', secondary: '#A3A177' }
+    
+    switch (currentSlide) {
+      case 0:
+        return { primary: '#151515', secondary: '#A3A177', primaryOpacity: 0.4, secondaryOpacity: 1 }
+      case 1:
+        return { primary: '#A7844F', secondary: '#A7844F', primaryOpacity: 0.8, secondaryOpacity: 1 }
+      case 2:
+        return { primary: '#C79D9C', secondary: '#C79D9C', primaryOpacity: 0.8, secondaryOpacity: 1 }
+      default:
+        return { primary: '#151515', secondary: '#A3A177', primaryOpacity: 0.4, secondaryOpacity: 1 }
+    }
+  }
+
+  const titleColors = getTitleColors()
+
   // Fonction pour passer à la question suivante avec animation
   const goToNextQuestion = () => {
     // Timeline pour l'animation de transition complète
@@ -105,6 +124,14 @@ function Slider() {
       duration: 0.6,
       ease: "power2.inOut"
     })
+    
+    // Faire disparaître le header en parallèle
+    tl.to('header', {
+      opacity: 0,
+      y: -20,
+      duration: 0.5,
+      ease: "power2.inOut"
+    }, 0)
     
     // 2. Transition du background
     tl.to(backgroundOverlayRef.current, {
@@ -301,9 +328,10 @@ function Slider() {
         backgroundOverlayRef.current.style.backgroundColor = element.backgroundColor
       }
       
-      // S'assurer que le verre est visible pour la première question
+      // S'assurer que le verre et le header sont visibles pour la première question
       setTimeout(() => {
         gsap.set('.verre-container', { opacity: 1, scale: 1 })
+        gsap.set('header', { opacity: 1, y: 0 })
         goToSlide(0)
       }, 100)
     } else if (currentQuestion === 'occasions') {
@@ -339,6 +367,11 @@ function Slider() {
 
   return (
     <section className="fixed inset-0 w-full h-full overflow-hidden z-50">
+      {/* Header - seulement pour la première question */}
+      {currentQuestion === 'ambiance' && (
+        <Header />
+      )}
+      
       {/* Background overlay animé */}
       <div 
         ref={backgroundOverlayRef}
@@ -376,7 +409,7 @@ function Slider() {
               className="w-full h-full object-contain"
               style={{
                 objectPosition: 'center center',
-                transform: 'scale(0.65)'
+                transform: 'scale(0.55) translateY(8%)'
               }}
             />
           </div>
@@ -416,12 +449,24 @@ function Slider() {
         <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
           {currentQuestion === 'ambiance' ? (
             <div className="text-center" style={{
-              marginTop: 'clamp(0.5rem, 1.5vh, 1rem)'
+              marginTop: 'clamp(4.5rem, 8vh, 6rem)'
             }}>
-              <h2 className="font-formula font-bold text-black leading-tight" style={{
-                fontSize: 'clamp(2.2rem, 4vw, 3rem)'
-              }}>
-                DANS QUELLE AMBIANCE<br />ÊTES-VOUS ?
+              <h2 className="font-formula font-bold leading-tight">
+                <span style={{ 
+                  color: titleColors.primary, 
+                  opacity: titleColors.primaryOpacity,
+                  fontSize: 'clamp(1.6rem, 3vw, 2.2rem)'
+                }}>
+                  CHOISISSEZ VOTRE
+                </span>
+                <br />
+                <span style={{ 
+                  color: titleColors.secondary,
+                  opacity: titleColors.secondaryOpacity,
+                  fontSize: 'clamp(2.8rem, 5vw, 4rem)'
+                }}>
+                  AMBIANCE
+                </span>
               </h2>
             </div>
           ) : (
@@ -496,7 +541,7 @@ function Slider() {
                       onClick={goToNextQuestion}
                       className="flex items-center justify-center gap-3"
                       style={{
-                        fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
+                        fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
                         padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
@@ -543,7 +588,7 @@ function Slider() {
                       onClick={goToNextQuestion}
                       className="flex items-center justify-center gap-3"
                       style={{
-                        fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
+                        fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
                         padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
@@ -590,7 +635,7 @@ function Slider() {
                       onClick={goToNextQuestion}
                       className="flex items-center justify-center gap-3"
                       style={{
-                        fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
+                        fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
                         padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
@@ -624,7 +669,7 @@ function Slider() {
                     marginBottom: 'clamp(1.5rem, 4vh, 2.5rem)'
                   }}>
                     <Button 
-                      variant="secondary"
+                      variant="primary"
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
@@ -639,7 +684,7 @@ function Slider() {
                         style={{
                           width: 'clamp(1rem, 2.5vw, 1.5rem)',
                           height: 'clamp(1rem, 2.5vw, 1.5rem)',
-                          filter: 'brightness(0)'
+                          filter: 'brightness(0) invert(1)'
                         }}
                       />
                     </Button>
@@ -657,7 +702,7 @@ function Slider() {
                     marginBottom: 'clamp(1.5rem, 4vh, 2.5rem)'
                   }}>
                                         <Button 
-                      variant="secondary"
+                      variant="primary"
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
@@ -672,7 +717,7 @@ function Slider() {
                         style={{
                           width: 'clamp(1rem, 2.5vw, 1.5rem)',
                           height: 'clamp(1rem, 2.5vw, 1.5rem)',
-                          filter: 'brightness(0)'
+                          filter: 'brightness(0) invert(1)'
                         }}
                       />
                     </Button>
@@ -690,7 +735,7 @@ function Slider() {
                     marginBottom: 'clamp(1.5rem, 4vh, 2.5rem)'
                   }}>
                                          <Button 
-                      variant="secondary"
+                      variant="primary"
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
@@ -705,7 +750,7 @@ function Slider() {
                         style={{
                           width: 'clamp(1rem, 2.5vw, 1.5rem)',
                           height: 'clamp(1rem, 2.5vw, 1.5rem)',
-                          filter: 'brightness(0)'
+                          filter: 'brightness(0) invert(1)'
                         }}
                       />
                     </Button>
@@ -723,7 +768,7 @@ function Slider() {
                     marginBottom: 'clamp(1.5rem, 4vh, 2.5rem)'
                   }}>
                                          <Button 
-                      variant="secondary"
+                      variant="primary"
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
@@ -738,7 +783,7 @@ function Slider() {
                         style={{
                           width: 'clamp(1rem, 2.5vw, 1.5rem)',
                           height: 'clamp(1rem, 2.5vw, 1.5rem)',
-                          filter: 'brightness(0)'
+                          filter: 'brightness(0) invert(1)'
                         }}
                       />
                     </Button>
@@ -756,7 +801,7 @@ function Slider() {
                     marginBottom: 'clamp(1.5rem, 4vh, 2.5rem)'
                   }}>
                                          <Button 
-                      variant="secondary"
+                      variant="primary"
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
@@ -771,7 +816,7 @@ function Slider() {
                         style={{
                           width: 'clamp(1rem, 2.5vw, 1.5rem)',
                           height: 'clamp(1rem, 2.5vw, 1.5rem)',
-                          filter: 'brightness(0)'
+                          filter: 'brightness(0) invert(1)'
                         }}
                       />
                     </Button>
