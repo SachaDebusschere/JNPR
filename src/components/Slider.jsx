@@ -12,8 +12,10 @@ function Slider() {
   const decorativeElementRef = useRef()
   const backgroundOverlayRef = useRef()
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [currentQuestion, setCurrentQuestion] = useState('ambiance') // 'ambiance' ou 'occasions'
+  const [currentQuestion, setCurrentQuestion] = useState('welcome') // 'welcome', 'ambiance', 'occasions' ou 'ingredients'
   const [previousAmbianceSlide, setPreviousAmbianceSlide] = useState(0) // Sauvegarder la slide de la première question
+  const [previousOccasionSlide, setPreviousOccasionSlide] = useState(0) // Sauvegarder la slide de la deuxième question
+  const [selectedIngredients, setSelectedIngredients] = useState([]) // Ingrédients sélectionnés
   const [touchStart, setTouchStart] = useState(null)
   const [touchEnd, setTouchEnd] = useState(null)
   
@@ -99,6 +101,28 @@ function Slider() {
     }
   ]
 
+  // Configuration des ingrédients pour la troisième question
+  const ingredientsList = [
+    { name: 'Baies de genièvre', image: '/img/slider/Produits_PNG/Baies de genièvre.png' },
+    { name: 'Cannelle', image: '/img/slider/Produits_PNG/Cannelle.png' },
+    { name: 'Citron', image: '/img/slider/Produits_PNG/Citron.png' },
+    { name: 'Concombre', image: '/img/slider/Produits_PNG/Concombre.png' },
+    { name: 'Gingembre', image: '/img/slider/Produits_PNG/Gingembre.png' },
+    { name: 'JNPR 1', image: '/img/slider/Produits_PNG/JNPR 1.png' },
+    { name: 'JNPR 2', image: '/img/slider/Produits_PNG/JNPR 2.png' },
+    { name: 'JNPR 3', image: '/img/slider/Produits_PNG/JNPR 3.png' },
+    { name: 'Jus de citron', image: '/img/slider/Produits_PNG/Jus de citron.png' },
+    { name: 'Jus d\'orange', image: '/img/slider/Produits_PNG/Jus d\'orange.png' },
+    { name: 'Jus de Pomme', image: '/img/slider/Produits_PNG/Jus de Pomme.png' },
+    { name: 'Menthe', image: '/img/slider/Produits_PNG/Menthe.png' },
+    { name: 'Miel', image: '/img/slider/Produits_PNG/Miel.png' },
+    { name: 'Pomme', image: '/img/slider/Produits_PNG/Pomme.png' },
+    { name: 'Romarin', image: '/img/slider/Produits_PNG/Romarin.png' },
+    { name: 'Sucre roux', image: '/img/slider/Produits_PNG/Sucre roux.png' },
+    { name: 'Thym', image: '/img/slider/Produits_PNG/Thym.png' },
+    { name: 'Tonic', image: '/img/slider/Produits_PNG/Tonic.png' }
+  ]
+
   // Choisir la configuration selon la question actuelle
   const decorativeElements = currentQuestion === 'ambiance' ? ambianceElements : occasionsElements
 
@@ -122,216 +146,476 @@ function Slider() {
 
   const titleColors = getTitleColors()
 
-  // Fonction pour passer à la question suivante avec animation
-  const goToNextQuestion = () => {
-    // Sauvegarder la slide actuelle de la première question
-    setPreviousAmbianceSlide(currentSlide)
-    
-    // Timeline pour l'animation de transition complète
+  // Fonction pour commencer le questionnaire depuis la page d'accueil
+  const startQuestionnaire = () => {
+    // Timeline pour l'animation de transition de l'accueil vers ambiance
     const tl = gsap.timeline()
     
-    // 1. ANIMATION OUT - Faire disparaître tous les éléments de la première question
-    tl.to([decorativeElementRef.current, '.verre-container'], {
-      opacity: 0,
-      scale: 0.8,
-      duration: 0.6,
-      ease: "power2.inOut"
-    })
+    // 1. ANIMATION OUT - Faire disparaître les éléments de la page d'accueil
+    const welcomeTitle = document.querySelector('.welcome-title')
+    const welcomeSubtitle = document.querySelector('.welcome-subtitle')
+    const welcomeButton = document.querySelector('.welcome-button')
+    const welcomeImage = document.querySelector('.welcome-image')
     
-    // Les icônes de navigation sont maintenant gérées par le rendu conditionnel
-    
-    // 2. Transition du background
-    tl.to(backgroundOverlayRef.current, {
-      backgroundColor: '#FCFCFC',
-      duration: 0.4,
-      ease: "power2.inOut"
-    }, 0.2)
-    
-    // 3. Changer de question et réinitialiser la position du slider
-    tl.call(() => {
-      setCurrentQuestion('occasions')
-      setCurrentSlide(0)
-      // Réinitialiser la position du slider immédiatement
-      if (sliderRef.current) {
-        gsap.set(sliderRef.current, { x: 0 })
-      }
-    }, null, 0.6)
-    
-    // 4. Attendre que React ait rendu les nouveaux éléments puis lancer l'animation IN
-    tl.call(() => {
-      // Attendre 2 frames pour s'assurer que le DOM est mis à jour
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          // Vérifier que les éléments existent avant de les animer
-          const header = document.querySelector('.question-occasions-header')
-          const image = document.querySelector('.moments-image')
-          const buttons = document.querySelectorAll('.occasions-button')
-          
-          if (header) {
-            gsap.fromTo(header, {
-              opacity: 0,
-              y: -50
-            }, {
-              opacity: 1,
-              y: 0,
-              duration: 0.6,
-              ease: "power2.out"
-            })
-          }
-          
-          if (image) {
-            gsap.fromTo(image, {
-              opacity: 0,
-              scale: 0.6
-            }, {
-              opacity: 1,
-              scale: 0.8,
-              duration: 0.7,
-              ease: "back.out(1.7)",
-              delay: 0.1
-            })
-          }
-          
-          if (buttons.length > 0) {
-            gsap.fromTo(buttons, {
-              opacity: 0,
-              y: 30
-            }, {
-              opacity: 1,
-              y: 0,
-              duration: 0.5,
-              ease: "power2.out",
-              delay: 0.3,
-              stagger: 0.1 // Effet cascadé pour tous les boutons
-            })
-          }
-        })
-      })
-    }, null, 0.8)
-  }
-
-  // Fonction pour retourner à la première question sur la slide précédente
-  const goBackToPreviousQuestion = () => {
-    // Timeline pour l'animation de transition de retour
-    const tl = gsap.timeline()
-    
-    // 1. ANIMATION OUT - Faire disparaître les éléments de la deuxième question (inverse de l'animation IN)
-    
-    // Header remonte vers le haut
-    const header = document.querySelector('.question-occasions-header')
-    if (header) {
-      tl.to(header, {
+    if (welcomeTitle) {
+      tl.to(welcomeTitle, {
         opacity: 0,
-        y: -50,
+        y: -30,
         duration: 0.5,
         ease: "power2.in"
       }, 0)
     }
     
-    // Image des moments rétrécit et disparaît
-    const image = document.querySelector('.moments-image')
-    if (image) {
-      tl.to(image, {
+    if (welcomeSubtitle) {
+      tl.to(welcomeSubtitle, {
         opacity: 0,
-        scale: 0.6,
-        duration: 0.5,
-        ease: "back.in(1.7)"
+        y: -20,
+        duration: 0.4,
+        ease: "power2.in"
       }, 0.1)
     }
     
-    // Boutons descendent et disparaissent en cascade
-    const buttons = document.querySelectorAll('.occasions-button')
-    if (buttons.length > 0) {
-      tl.to(buttons, {
+    if (welcomeButton) {
+      tl.to(welcomeButton, {
         opacity: 0,
-        y: 30,
+        y: 20,
         duration: 0.4,
-        ease: "power2.in",
-        stagger: -0.1 // Effet cascadé inverse
+        ease: "power2.in"
       }, 0.2)
     }
     
-    // Transition du background
+    if (welcomeImage) {
+      tl.to(welcomeImage, {
+        opacity: 0,
+        y: 30,
+        duration: 0.5,
+        ease: "power2.in"
+      }, 0.3)
+    }
+    
+    // 2. Transition du background
     tl.to(backgroundOverlayRef.current, {
-      backgroundColor: '#F4FFE3', // Retour au vert de la première question
+      backgroundColor: '#F4FFE3',
       duration: 0.4,
       ease: "power2.inOut"
-    }, 0.3)
+    }, 0.4)
     
-    // 2. Changer de question et positionner sur la slide précédente
+    // 3. Changer de question vers ambiance
     tl.call(() => {
       setCurrentQuestion('ambiance')
-      setCurrentSlide(previousAmbianceSlide)
-      // Positionner le slider sur la slide sauvegardée
-      if (sliderRef.current && containerRef.current) {
-        const slideWidth = containerRef.current.offsetWidth
-        gsap.set(sliderRef.current, { x: -previousAmbianceSlide * slideWidth })
-      }
-    }, null, 0.7)
-    
-    // 3. ANIMATION IN - Faire réapparaître les éléments de la première question (inverse de l'animation OUT)
-    tl.call(() => {
-      // Réinitialiser et faire apparaître l'élément décoratif
-      if (decorativeElementRef.current) {
-        const element = ambianceElements[previousAmbianceSlide]
-        decorativeElementRef.current.src = element.image
-        decorativeElementRef.current.alt = element.alt
-        
-        // Positionner les éléments en état "sortis"
-        gsap.set(decorativeElementRef.current, {
-          x: element.translateX,
-          y: element.translateY,
-          scale: 0.8, // Commencer plus petit
-          opacity: 0
-        })
-        
-        gsap.set('.verre-container', {
-          opacity: 0,
-          scale: 0.8
-        })
-        
-        // Animation d'entrée : grandir et apparaître
-        gsap.to(decorativeElementRef.current, {
-          opacity: 1,
-          scale: element.scale, // Aller à la vraie scale
-          duration: 0.6,
-          ease: "power2.out"
-        })
-        
-        gsap.to('.verre-container', {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out"
-        })
-      }
+      setCurrentSlide(0)
+    }, null, 0.8)
+  }
+
+  // Fonction pour passer à la question suivante avec animation
+  const goToNextQuestion = () => {
+    if (currentQuestion === 'ambiance') {
+      // Sauvegarder la slide actuelle de la première question
+      setPreviousAmbianceSlide(currentSlide)
       
-      // Animation du titre - descend du haut (inverse de l'animation OUT)
-      requestAnimationFrame(() => {
-        const titleContainer = document.querySelector('.ambiance-title')
-        if (titleContainer) {
-          gsap.fromTo(titleContainer, {
-            opacity: 0,
-            y: -30
-          }, {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            ease: "power2.out",
-            delay: 0.2
-          })
-        }
+      // Timeline pour l'animation de transition complète
+      const tl = gsap.timeline()
+      
+      // 1. ANIMATION OUT - Faire disparaître tous les éléments de la première question
+      tl.to([decorativeElementRef.current, '.verre-container'], {
+        opacity: 0,
+        scale: 0.8,
+        duration: 0.6,
+        ease: "power2.inOut"
       })
       
-      // Changer la couleur de background selon la slide
-      if (backgroundOverlayRef.current) {
-        gsap.to(backgroundOverlayRef.current, {
-          backgroundColor: ambianceElements[previousAmbianceSlide].backgroundColor,
-          duration: 0.5,
-          ease: "power2.out"
+      // 2. Transition du background
+      tl.to(backgroundOverlayRef.current, {
+        backgroundColor: '#FCFCFC',
+        duration: 0.4,
+        ease: "power2.inOut"
+      }, 0.2)
+      
+      // 3. Changer de question et réinitialiser la position du slider
+      tl.call(() => {
+        setCurrentQuestion('occasions')
+        setCurrentSlide(0)
+        // Réinitialiser la position du slider immédiatement
+        if (sliderRef.current) {
+          gsap.set(sliderRef.current, { x: 0 })
+        }
+      }, null, 0.6)
+      
+      // 4. Animation IN pour les occasions
+      tl.call(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const header = document.querySelector('.question-occasions-header')
+            const image = document.querySelector('.moments-image')
+            const buttons = document.querySelectorAll('.occasions-button')
+            
+            if (header) {
+              gsap.fromTo(header, {
+                opacity: 0,
+                y: -50
+              }, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                ease: "power2.out"
+              })
+            }
+            
+            if (image) {
+              gsap.fromTo(image, {
+                opacity: 0,
+                scale: 0.6
+              }, {
+                opacity: 1,
+                scale: 0.8,
+                duration: 0.7,
+                ease: "back.out(1.7)",
+                delay: 0.1
+              })
+            }
+            
+            if (buttons.length > 0) {
+              gsap.fromTo(buttons, {
+                opacity: 0,
+                y: 30
+              }, {
+                opacity: 1,
+                y: 0,
+                duration: 0.5,
+                ease: "power2.out",
+                delay: 0.3,
+                stagger: 0.1
+              })
+            }
+          })
         })
+      }, null, 0.8)
+    } else if (currentQuestion === 'occasions') {
+      // Sauvegarder la slide actuelle de la deuxième question
+      setPreviousOccasionSlide(currentSlide)
+      
+      // Timeline pour l'animation vers la question des ingrédients
+      const tl = gsap.timeline()
+      
+      // 1. ANIMATION OUT - Faire disparaître les éléments des occasions
+      const header = document.querySelector('.question-occasions-header')
+      const image = document.querySelector('.moments-image')
+      const buttons = document.querySelectorAll('.occasions-button')
+      
+      if (header) {
+        tl.to(header, {
+          opacity: 0,
+          y: -50,
+          duration: 0.5,
+          ease: "power2.in"
+        }, 0)
       }
-    }, null, 0.9)
+      
+      if (image) {
+        tl.to(image, {
+          opacity: 0,
+          scale: 0.6,
+          duration: 0.5,
+          ease: "back.in(1.7)"
+        }, 0.1)
+      }
+      
+      if (buttons.length > 0) {
+        tl.to(buttons, {
+          opacity: 0,
+          y: 30,
+          duration: 0.4,
+          ease: "power2.in",
+          stagger: -0.1
+        }, 0.2)
+      }
+      
+      // 2. Changer de question vers les ingrédients
+      tl.call(() => {
+        setCurrentQuestion('ingredients')
+        setCurrentSlide(0)
+        // Réinitialiser la position du slider (pas nécessaire pour le scroll vertical mais pour être sûr)
+        if (sliderRef.current) {
+          gsap.set(sliderRef.current, { x: 0 })
+        }
+      }, null, 0.7)
+      
+      // 3. Animation IN pour la question des ingrédients
+      tl.call(() => {
+        // Attendre un peu plus pour s'assurer que React a rendu les éléments
+        setTimeout(() => {
+          const ingredientsHeader = document.querySelector('.question-ingredients-header')
+          const ingredientsGrid = document.querySelector('.ingredients-grid')
+          
+          // S'assurer que les éléments sont cachés avant l'animation
+          if (ingredientsHeader) {
+            gsap.set(ingredientsHeader, { opacity: 0, y: -50 })
+          }
+          
+          if (ingredientsGrid) {
+            const ingredientItems = ingredientsGrid.querySelectorAll('.ingredient-item')
+            
+            if (ingredientItems.length > 0) {
+              gsap.set(ingredientItems, { opacity: 0, y: 30, scale: 0.8 })
+            }
+          }
+          
+          // Puis lancer l'animation IN après un petit délai
+          setTimeout(() => {
+            if (ingredientsHeader) {
+              gsap.to(ingredientsHeader, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                ease: "power2.out"
+              })
+            }
+            
+            if (ingredientsGrid) {
+              const ingredientItems = ingredientsGrid.querySelectorAll('.ingredient-item')
+              if (ingredientItems.length > 0) {
+                gsap.to(ingredientItems, {
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  duration: 0.5,
+                  ease: "power2.out",
+                  delay: 0.2,
+                  stagger: 0.05
+                })
+              }
+            }
+          }, 100)
+        }, 200) // Délai plus long pour s'assurer que les éléments sont rendus
+      }, null, 0.7)
+    }
+  }
+
+  // Fonction pour retourner à la question précédente
+  const goBackToPreviousQuestion = () => {
+    if (currentQuestion === 'occasions') {
+      // Retour de occasions vers ambiance
+      const tl = gsap.timeline()
+      
+      const header = document.querySelector('.question-occasions-header')
+      if (header) {
+        tl.to(header, {
+          opacity: 0,
+          y: -50,
+          duration: 0.5,
+          ease: "power2.in"
+        }, 0)
+      }
+      
+      const image = document.querySelector('.moments-image')
+      if (image) {
+        tl.to(image, {
+          opacity: 0,
+          scale: 0.6,
+          duration: 0.5,
+          ease: "back.in(1.7)"
+        }, 0.1)
+      }
+      
+      const buttons = document.querySelectorAll('.occasions-button')
+      if (buttons.length > 0) {
+        tl.to(buttons, {
+          opacity: 0,
+          y: 30,
+          duration: 0.4,
+          ease: "power2.in",
+          stagger: -0.1
+        }, 0.2)
+      }
+      
+      tl.to(backgroundOverlayRef.current, {
+        backgroundColor: '#F4FFE3',
+        duration: 0.4,
+        ease: "power2.inOut"
+      }, 0.3)
+      
+      tl.call(() => {
+        setCurrentQuestion('ambiance')
+        setCurrentSlide(previousAmbianceSlide)
+        if (sliderRef.current && containerRef.current) {
+          const slideWidth = containerRef.current.offsetWidth
+          gsap.set(sliderRef.current, { x: -previousAmbianceSlide * slideWidth })
+        }
+      }, null, 0.7)
+      
+      tl.call(() => {
+        if (decorativeElementRef.current) {
+          const element = ambianceElements[previousAmbianceSlide]
+          decorativeElementRef.current.src = element.image
+          decorativeElementRef.current.alt = element.alt
+          
+          gsap.set(decorativeElementRef.current, {
+            x: element.translateX,
+            y: element.translateY,
+            scale: 0.8,
+            opacity: 0
+          })
+          
+          gsap.set('.verre-container', {
+            opacity: 0,
+            scale: 0.8
+          })
+          
+          gsap.to(decorativeElementRef.current, {
+            opacity: 1,
+            scale: element.scale,
+            duration: 0.6,
+            ease: "power2.out"
+          })
+          
+          gsap.to('.verre-container', {
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: "power2.out"
+          })
+        }
+        
+        requestAnimationFrame(() => {
+          const titleContainer = document.querySelector('.ambiance-title')
+          if (titleContainer) {
+            gsap.fromTo(titleContainer, {
+              opacity: 0,
+              y: -30
+            }, {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              ease: "power2.out",
+              delay: 0.2
+            })
+          }
+        })
+        
+        if (backgroundOverlayRef.current) {
+          gsap.to(backgroundOverlayRef.current, {
+            backgroundColor: ambianceElements[previousAmbianceSlide].backgroundColor,
+            duration: 0.5,
+            ease: "power2.out"
+          })
+        }
+      }, null, 0.9)
+    } else if (currentQuestion === 'ingredients') {
+      // Retour de ingredients vers occasions
+      const tl = gsap.timeline()
+      
+      const ingredientsHeader = document.querySelector('.question-ingredients-header')
+      const ingredientsGrid = document.querySelector('.ingredients-grid')
+      
+      if (ingredientsHeader) {
+        tl.to(ingredientsHeader, {
+          opacity: 0,
+          y: -50,
+          duration: 0.5,
+          ease: "power2.in"
+        }, 0)
+      }
+      
+      if (ingredientsGrid) {
+        const ingredientItems = ingredientsGrid.querySelectorAll('.ingredient-item')
+        tl.to(ingredientItems, {
+          opacity: 0,
+          y: 30,
+          scale: 0.8,
+          duration: 0.4,
+          ease: "power2.in",
+          stagger: -0.02
+        }, 0.1)
+      }
+      
+      tl.to(backgroundOverlayRef.current, {
+        backgroundColor: '#FCFCFC',
+        duration: 0.4,
+        ease: "power2.inOut"
+      }, 0.3)
+      
+      tl.call(() => {
+        setCurrentQuestion('occasions')
+        setCurrentSlide(previousOccasionSlide)
+        if (sliderRef.current && containerRef.current) {
+          const slideWidth = containerRef.current.offsetWidth
+          gsap.set(sliderRef.current, { x: -previousOccasionSlide * slideWidth })
+        }
+      }, null, 0.7)
+      
+      tl.call(() => {
+        if (decorativeElementRef.current) {
+          const element = occasionsElements[previousOccasionSlide]
+          decorativeElementRef.current.src = element.image
+          decorativeElementRef.current.alt = element.alt
+          
+          gsap.set(decorativeElementRef.current, {
+            x: element.translateX,
+            y: element.translateY,
+            scale: 0.6,
+            opacity: 0
+          })
+        }
+        
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const header = document.querySelector('.question-occasions-header')
+            const image = document.querySelector('.moments-image')
+            const buttons = document.querySelectorAll('.occasions-button')
+            
+            if (header) {
+              gsap.fromTo(header, {
+                opacity: 0,
+                y: -50
+              }, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                ease: "power2.out"
+              })
+            }
+            
+            if (image) {
+              gsap.fromTo(image, {
+                opacity: 0,
+                scale: 0.6
+              }, {
+                opacity: 1,
+                scale: 0.8,
+                duration: 0.7,
+                ease: "back.out(1.7)",
+                delay: 0.1
+              })
+            }
+            
+            if (buttons.length > 0) {
+              gsap.fromTo(buttons, {
+                opacity: 0,
+                y: 30
+              }, {
+                opacity: 1,
+                y: 0,
+                duration: 0.5,
+                ease: "power2.out",
+                delay: 0.3,
+                stagger: 0.1
+              })
+            }
+          })
+        })
+      }, null, 0.9)
+    }
+  }
+
+  // Fonction pour gérer la sélection des ingrédients
+  const toggleIngredientSelection = (ingredientName) => {
+    setSelectedIngredients(prev => {
+      if (prev.includes(ingredientName)) {
+        return prev.filter(name => name !== ingredientName)
+      } else {
+        return [...prev, ingredientName]
+      }
+    })
   }
 
   const animateDecorativeElement = (slideIndex, direction = 'next') => {
@@ -440,7 +724,12 @@ function Slider() {
 
   useEffect(() => {
     // Initialiser selon la question actuelle
-    if (currentQuestion === 'ambiance') {
+    if (currentQuestion === 'welcome') {
+      // Initialiser la page d'accueil
+      if (backgroundOverlayRef.current) {
+        backgroundOverlayRef.current.style.backgroundColor = '#FCFCFC'
+      }
+    } else if (currentQuestion === 'ambiance') {
       // Initialiser l'élément décoratif et le background pour la slide courante
       if (decorativeElementRef.current && backgroundOverlayRef.current) {
         const element = decorativeElements[currentSlide]
@@ -460,7 +749,6 @@ function Slider() {
       }
       
       // S'assurer que le verre est visible pour la première question
-      // Ne pas appeler goToSlide(0) si on revient d'une autre question
       setTimeout(() => {
         gsap.set('.verre-container', { opacity: 1, scale: 1 })
         // Seulement aller à la slide 0 si on est vraiment au début
@@ -468,68 +756,77 @@ function Slider() {
           goToSlide(0)
         }
       }, 100)
-          } else if (currentQuestion === 'occasions') {
-        // Initialiser l'image pour la première slide des occasions
-        if (decorativeElementRef.current) {
-          const element = decorativeElements[0]
-          decorativeElementRef.current.src = element.image
-          decorativeElementRef.current.alt = element.alt
-          
-          // Initialiser les transformations pour les moments (cachés initialement)
-          gsap.set(decorativeElementRef.current, {
-            x: element.translateX,
-            y: element.translateY,
-            scale: 0.6, // Commencer plus petit pour l'animation
-            opacity: 0 // Caché initialement
-          })
-        }
+    } else if (currentQuestion === 'occasions') {
+      // Initialiser l'image pour la slide courante des occasions
+      if (decorativeElementRef.current) {
+        const element = decorativeElements[currentSlide]
+        decorativeElementRef.current.src = element.image
+        decorativeElementRef.current.alt = element.alt
         
-        // S'assurer que tous les éléments occasions sont cachés au départ
-        requestAnimationFrame(() => {
-          const header = document.querySelector('.question-occasions-header')
-          const image = document.querySelector('.moments-image')
-          const buttons = document.querySelectorAll('.occasions-button')
-          
-          if (header) gsap.set(header, { opacity: 0 })
-          if (image) gsap.set(image, { opacity: 0 })
-          if (buttons.length > 0) gsap.set(buttons, { opacity: 0 })
+        // Initialiser les transformations pour les moments (cachés initialement)
+        gsap.set(decorativeElementRef.current, {
+          x: element.translateX,
+          y: element.translateY,
+          scale: 0.6, // Commencer plus petit pour l'animation
+          opacity: 0 // Caché initialement
         })
+      }
+      
+      // S'assurer que seuls les éléments header et image occasions sont cachés au départ (pas les boutons)
+      requestAnimationFrame(() => {
+        const header = document.querySelector('.question-occasions-header')
+        const image = document.querySelector('.moments-image')
         
+        if (header) gsap.set(header, { opacity: 0 })
+        if (image) gsap.set(image, { opacity: 0 })
+        // Ne plus cacher les boutons ici car cela cause des problèmes de visibilité
+      })
+      
+      // Ne forcer goToSlide(0) que si on est vraiment au début (pas en retour d'une autre question)
+      if (currentSlide === 0) {
         setTimeout(() => goToSlide(0), 100)
       }
+    } else if (currentQuestion === 'ingredients') {
+      // Initialiser la question des ingrédients
+      if (backgroundOverlayRef.current) {
+        backgroundOverlayRef.current.style.backgroundColor = '#FCFCFC'
+      }
+      
+      // Note: Ne pas cacher les éléments ici car l'animation IN se charge de ça lors de la transition
+    }
+    
+    // SÉCURITÉ : Forcer la visibilité de tous les boutons après initialisation
+    setTimeout(() => {
+      // Cibler spécifiquement les boutons problématiques
+      const selectors = [
+        'button[class*="flex items-center justify-center"]',
+        '.occasions-button',
+        'button[variant="primary"]',
+        'button'
+      ]
+      
+      selectors.forEach(selector => {
+        const buttons = document.querySelectorAll(selector)
+        buttons.forEach(button => {
+          // Forcer la visibilité sur tous les boutons trouvés
+          button.style.opacity = '1'
+          button.style.visibility = 'visible'
+          button.style.display = 'flex'
+        })
+      })
+    }, 500)
       
       // Les icônes de navigation sont maintenant gérées par le rendu conditionnel React
       }, [currentQuestion])
 
   // Les icônes de navigation sont maintenant gérées uniquement par le rendu conditionnel
 
-  return (
+      return (
     <section className="fixed inset-0 w-full h-full overflow-hidden z-50">
-      {/* Icônes de navigation - pour les deux questions */}
-      {currentQuestion === 'ambiance' && (
+      {/* Icônes de navigation */}
+      {currentQuestion === 'welcome' && (
         <>
-          {/* Flèche retour en haut à gauche - noire */}
-          <button 
-            className="fixed top-4 left-4 z-[60] hover:opacity-70 transition-opacity duration-200"
-            aria-label="Retour"
-            style={{ 
-              opacity: '1 !important',
-              visibility: 'visible !important',
-              display: 'block !important'
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path 
-                d="M15 18L9 12L15 6" 
-                stroke="#000" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          
-          {/* Croix fermer en haut à droite - noire */}
+          {/* Croix fermer en haut à droite pour la page d'accueil */}
           <button 
             className="fixed top-4 right-4 z-[60] hover:opacity-70 transition-opacity duration-200"
             aria-label="Fermer"
@@ -539,7 +836,96 @@ function Slider() {
               display: 'block !important'
             }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <img 
+              src="/img/croix.png" 
+              alt="Fermer"
+              className="w-6 h-6"
+            />
+          </button>
+        </>
+      )}
+      
+      {currentQuestion === 'ambiance' && (
+        <>
+          {/* Flèche retour en haut à gauche */}
+          <button 
+            className="fixed top-4 left-2 z-[60] hover:opacity-70 transition-opacity duration-200 flex items-center gap-0.2"
+            aria-label="Retour"
+            style={{ 
+              opacity: '1 !important',
+              visibility: 'visible !important',
+              display: 'flex !important'
+            }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path 
+                d="M15 18L9 12L15 6" 
+                stroke="#151515" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                strokeOpacity="0.6"
+              />
+            </svg>
+            <span className="font-suisse text-xs font-normal" style={{ color: '#151515', opacity: 0.6 }}>RETOUR</span>
+          </button>
+          
+          {/* Croix fermer en haut à droite */}
+          <button 
+            className="fixed top-4 right-4 z-[60] hover:opacity-70 transition-opacity duration-200"
+            aria-label="Fermer"
+            style={{ 
+              opacity: '1 !important',
+              visibility: 'visible !important',
+              display: 'block !important'
+            }}
+          >
+            <img 
+              src="/img/croix.png" 
+              alt="Fermer"
+              className="w-6 h-6"
+            />
+          </button>
+        </>
+      )}
+      
+      {currentQuestion === 'occasions' && (
+        <>
+          {/* Flèche retour en haut à gauche - bleu */}
+          <button 
+            className="fixed top-4 left-2 z-[60] hover:opacity-70 transition-opacity duration-200 flex items-center gap-0.2"
+            aria-label="Retour"
+            onClick={goBackToPreviousQuestion}
+            style={{ 
+              opacity: '1 !important',
+              visibility: 'visible !important',
+              display: 'flex !important'
+            }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path 
+                d="M15 18L9 12L15 6" 
+                stroke="#76A0BC" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="font-suisse text-xs font-normal" style={{ color: '#76A0BC' }}>RETOUR</span>
+          </button>
+          
+          {/* Croix fermer en haut à droite - noire avec fond bleu */}
+          <button 
+            className="fixed top-4 right-4 z-[60] hover:opacity-70 transition-opacity duration-200 flex items-center justify-center w-6 h-6"
+            aria-label="Fermer"
+            style={{ 
+              opacity: '1 !important',
+              visibility: 'visible !important',
+              display: 'flex !important',
+              backgroundColor: '#76A0BC'
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path 
                 d="M18 6L6 18M6 6L18 18" 
                 stroke="#000" 
@@ -551,33 +937,34 @@ function Slider() {
           </button>
         </>
       )}
-      
-      {/* Icônes de navigation - pour la deuxième question */}
-      {currentQuestion === 'occasions' && (
+
+      {currentQuestion === 'ingredients' && (
         <>
-          {/* Flèche retour en haut à gauche - blanche */}
+          {/* Flèche retour en haut à gauche - gris foncé */}
           <button 
-            className="fixed top-4 left-4 z-[60] hover:opacity-70 transition-opacity duration-200"
+            className="fixed top-4 left-2 z-[60] hover:opacity-70 transition-opacity duration-200 flex items-center gap-0.2"
             aria-label="Retour"
             onClick={goBackToPreviousQuestion}
             style={{ 
               opacity: '1 !important',
               visibility: 'visible !important',
-              display: 'block !important'
+              display: 'flex !important'
             }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
               <path 
                 d="M15 18L9 12L15 6" 
-                stroke="#fff" 
+                stroke="#151515" 
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
+                strokeOpacity="0.6"
               />
             </svg>
+            <span className="font-suisse text-xs font-normal" style={{ color: '#151515', opacity: 0.6 }}>RETOUR</span>
           </button>
           
-          {/* Croix fermer en haut à droite - blanche */}
+          {/* Croix fermer en haut à droite */}
           <button 
             className="fixed top-4 right-4 z-[60] hover:opacity-70 transition-opacity duration-200"
             aria-label="Fermer"
@@ -587,15 +974,11 @@ function Slider() {
               display: 'block !important'
             }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path 
-                d="M18 6L6 18M6 6L18 18" 
-                stroke="#fff" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img 
+              src="/img/croix.png" 
+              alt="Fermer"
+              className="w-6 h-6"
+            />
           </button>
         </>
       )}
@@ -604,7 +987,10 @@ function Slider() {
       <div 
         ref={backgroundOverlayRef}
         className="absolute inset-0 w-full h-full"
-        style={{ backgroundColor: currentQuestion === 'ambiance' ? '#F4FFE3' : '#FCFCFC' }}
+        style={{ 
+          backgroundColor: currentQuestion === 'welcome' ? '#FCFCFC' : 
+                          currentQuestion === 'ambiance' ? '#F4FFE3' : '#FCFCFC' 
+        }}
       />
       
       {/* Background texture pour les occasions */}
@@ -628,131 +1014,357 @@ function Slider() {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Verre fixe - en arrière-plan (seulement pour la question ambiance) */}
-        {currentQuestion === 'ambiance' && (
-          <div className="verre-container absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-            <img 
-              src="/img/slider/Categories_PNG/verre.png" 
-              alt="Verre cocktail" 
-              className="w-full h-full object-contain"
-              style={{
-                objectPosition: 'center center',
-                transform: 'scale(0.55) translateY(8%)'
-              }}
-            />
-          </div>
-        )}
-
-        {/* Élément décoratif animé - au premier plan (seulement pour la question ambiance) */}
-        {currentQuestion === 'ambiance' && (
-          <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-            <img 
-              ref={decorativeElementRef}
-              src="/img/slider/Categories_PNG/vegetaux.png" 
-              alt="Végétaux" 
-              className="w-full h-full object-contain"
-              style={{
-                objectPosition: 'center center'
-              }}
-            />
-          </div>
-        )}
-
-        {/* Images des moments - pour la question occasions */}
-        {currentQuestion === 'occasions' && (
-          <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-            <img 
-              ref={decorativeElementRef}
-              src="/img/slider/Moments_PNG/soiree.png" 
-              alt="Moment" 
-              className="moments-image w-full h-full object-contain"
-              style={{
-                objectPosition: 'center center'
-              }}
-            />
-          </div>
-        )}
-
-        {/* Titre fixe - au-dessus de tout */}
-        <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
-          {currentQuestion === 'ambiance' ? (
-            <div className="ambiance-title text-center" style={{
-              marginTop: 'clamp(2rem, 4vh, 3rem)'
-            }}>
-              <h2 className="font-formula font-bold leading-tight">
-                <span style={{ 
-                  color: titleColors.primary, 
-                  opacity: titleColors.primaryOpacity,
-                  fontSize: 'clamp(2.2rem, 4vw, 3rem)'
-                }}>
-                  CHOISISSEZ VOTRE
-                </span>
-                <br />
-                <span style={{ 
-                  color: titleColors.secondary,
-                  opacity: titleColors.secondaryOpacity,
-                  fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
-                }}>
-                  AMBIANCE
-                </span>
-              </h2>
-            </div>
-          ) : (
-            <div 
-              className="question-occasions-header text-center"
-              style={{
-                backgroundColor: '#1D3D56',
-                paddingTop: 'clamp(1rem, 3vh, 2rem)',
-                paddingBottom: 'clamp(1rem, 3vh, 2rem)',
-                paddingLeft: 'clamp(1rem, 4vw, 2rem)',
-                paddingRight: 'clamp(1rem, 4vw, 2rem)'
-              }}
-            >
-              <h2 className="font-formula font-bold leading-tight">
-                <span style={{ 
-                  color: '#507F9F', 
-                  opacity: 0.8,
-                  fontSize: 'clamp(2.2rem, 4vw, 3rem)'
-                }}>
-                  POUR QUELLE
-                </span>
-                <br />
-                <span style={{ 
-                  color: '#76A0BC',
-                  opacity: 1,
-                  fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
-                }}>
-                  OCCASION ?
-                </span>
-              </h2>
-            </div>
-          )}
-        </div>
-
-        {/* Indicateurs de pagination fixes - au-dessus de tout */}
-        <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
-          <div className="flex justify-center pb-8" style={{ pointerEvents: 'auto' }}>
-            <div className="flex space-x-3">
-              {Array.from({ length: totalSlides }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    currentSlide === index 
-                      ? 'bg-black scale-125' 
-                      : 'bg-transparent border border-black/50 hover:bg-black/50'
-                  }`}
-                  aria-label={`Aller à la slide ${index + 1}`}
+        {/* Éléments décoratifs - seulement pour ambiance et occasions */}
+        {(currentQuestion === 'ambiance' || currentQuestion === 'occasions') && (
+          <>
+            {/* Verre fixe - en arrière-plan (seulement pour la question ambiance) */}
+            {currentQuestion === 'ambiance' && (
+              <div className="verre-container absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                <img 
+                  src="/img/slider/Categories_PNG/verre.png" 
+                  alt="Verre cocktail" 
+                  className="w-full h-full object-contain"
+                  style={{
+                    objectPosition: 'center center',
+                    transform: 'scale(0.55) translateY(8%)'
+                  }}
                 />
-              ))}
+              </div>
+            )}
+
+            {/* Élément décoratif animé - au premier plan (seulement pour la question ambiance) */}
+            {currentQuestion === 'ambiance' && (
+              <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+                <img 
+                  ref={decorativeElementRef}
+                  src="/img/slider/Categories_PNG/vegetaux.png" 
+                  alt="Végétaux" 
+                  className="w-full h-full object-contain"
+                  style={{
+                    objectPosition: 'center center'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Images des moments - pour la question occasions */}
+            {currentQuestion === 'occasions' && (
+              <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+                <img 
+                  ref={decorativeElementRef}
+                  src="/img/slider/Moments_PNG/soiree.png" 
+                  alt="Moment" 
+                  className="moments-image w-full h-full object-contain"
+                  style={{
+                    objectPosition: 'center center'
+                  }}
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Titre fixe - au-dessus de tout (seulement pour ambiance et occasions) */}
+        {(currentQuestion === 'ambiance' || currentQuestion === 'occasions') && (
+          <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
+            {currentQuestion === 'ambiance' ? (
+              <div className="ambiance-title text-center" style={{
+                marginTop: 'clamp(2rem, 4vh, 3rem)'
+              }}>
+                <h2 className="font-formula font-bold leading-tight">
+                  <span style={{ 
+                    color: titleColors.primary, 
+                    opacity: titleColors.primaryOpacity,
+                    fontSize: 'clamp(2.2rem, 4vw, 3rem)'
+                  }}>
+                    CHOISISSEZ VOTRE
+                  </span>
+                  <br />
+                  <span style={{ 
+                    color: titleColors.secondary,
+                    opacity: titleColors.secondaryOpacity,
+                    fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
+                  }}>
+                    AMBIANCE
+                  </span>
+                </h2>
+              </div>
+            ) : (
+              <div 
+                className="question-occasions-header text-center"
+                style={{
+                  backgroundColor: '#1D3D56',
+                  paddingTop: 'clamp(1rem, 3vh, 2rem)',
+                  paddingBottom: 'clamp(1rem, 3vh, 2rem)',
+                  paddingLeft: 'clamp(1rem, 4vw, 2rem)',
+                  paddingRight: 'clamp(1rem, 4vw, 2rem)'
+                }}
+              >
+                <h2 className="font-formula font-bold leading-tight">
+                  <span style={{ 
+                    color: '#507F9F', 
+                    opacity: 0.8,
+                    fontSize: 'clamp(2.2rem, 4vw, 3rem)'
+                  }}>
+                    POUR QUELLE
+                  </span>
+                  <br />
+                  <span style={{ 
+                    color: '#76A0BC',
+                    opacity: 1,
+                    fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
+                  }}>
+                    OCCASION ?
+                  </span>
+                </h2>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Indicateurs de pagination fixes - au-dessus de tout (seulement pour ambiance et occasions) */}
+        {(currentQuestion === 'ambiance' || currentQuestion === 'occasions') && (
+          <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
+            <div className="flex justify-center pb-8" style={{ pointerEvents: 'auto' }}>
+              <div className="flex space-x-3">
+                {Array.from({ length: totalSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      currentSlide === index 
+                        ? 'bg-black scale-125' 
+                        : 'bg-transparent border border-black/50 hover:bg-black/50'
+                    }`}
+                    aria-label={`Aller à la slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Slider container - textures et textes seulement */}
-        <div ref={sliderRef} className="flex h-full relative z-10">
+        <div ref={sliderRef} className={`h-full relative z-10 ${currentQuestion === 'ingredients' || currentQuestion === 'welcome' ? 'w-full' : 'flex'}`}>
           
-          {currentQuestion === 'ambiance' ? (
+          {currentQuestion === 'welcome' ? (
+            /* Page d'accueil - Bienvenue au comptoir */
+            <div className="w-full h-full flex flex-col items-center justify-start relative" style={{
+              paddingTop: 'clamp(2rem, 8vh, 4rem)'
+            }}>
+              {/* Background texture */}
+              <div 
+                className="absolute inset-0 opacity-90"
+                style={{
+                  backgroundImage: 'url(/img/slider/Categories_PNG/texture-bg.png)',
+                  backgroundSize: '100% 100%',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
+                }}
+              />
+              
+              {/* Titre principal */}
+              <div className="welcome-title text-center mb-4 relative z-10">
+                <h1 className="font-formula font-bold leading-tight">
+                  <span style={{ 
+                    color: '#4A7B9C', 
+                    fontSize: 'clamp(2.2rem, 4.5vw, 3rem)'
+                  }}>
+                    BIENVENUE AU
+                  </span>
+                  <br />
+                  <span style={{ 
+                    color: '#1B3E55',
+                    fontSize: 'clamp(4rem, 7.5vw, 5.5rem)'
+                  }}>
+                    COMPTOIR
+                  </span>
+                </h1>
+              </div>
+              
+              {/* Sous-titre */}
+              <div className="welcome-subtitle text-center mb-10 relative z-10" style={{
+                maxWidth: '300px',
+                paddingLeft: 'clamp(1rem, 4vw, 2rem)',
+                paddingRight: 'clamp(1rem, 4vw, 2rem)'
+              }}>
+                <p 
+                  className="font-suisse font-normal leading-relaxed"
+                  style={{
+                    fontSize: 'clamp(0.8rem, 2.8vw, 1rem)',
+                    color: '#151515',
+                    opacity: 0.8
+                  }}
+                >
+                  NOUS ALLONS CRÉER ENSEMBLE<br />VOTRE COCKTAIL IDÉAL.
+                </p>
+              </div>
+              
+              {/* Bouton commencer */}
+              <div className="welcome-button mb-8 relative z-10">
+                <Button 
+                  variant="primary"
+                  onClick={startQuestionnaire}
+                  style={{
+                    fontSize: 'clamp(0.9rem, 3.5vw, 1.2rem)',
+                    padding: 'clamp(0.6rem, 2.5vw, 1rem) clamp(1.5rem, 5vw, 2rem)'
+                  }}
+                >
+                  COMMENCER
+                </Button>
+              </div>
+              
+              {/* Image du comptoir en bas */}
+              <div className="welcome-image absolute bottom-0 left-0 right-0 w-full relative z-10">
+                <img 
+                  src="/img/slider/Comptoir.png" 
+                  alt="Comptoir" 
+                  className="w-full h-auto object-cover object-bottom"
+                  style={{
+                    minHeight: '58vh',
+                    maxHeight: '65vh',
+                    width: '100%'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none' // Cacher l'image si elle n'existe pas
+                  }}
+                />
+              </div>
+            </div>
+          ) : currentQuestion === 'ingredients' ? (
+            /* Question des ingrédients - Scroll vertical */
+            <div className="w-full h-full overflow-y-auto overflow-x-hidden" style={{
+              paddingTop: 'clamp(1rem, 2vh, 1.5rem)', // Espace réduit pour le header non-fixe
+              paddingBottom: 'clamp(4rem, 8vh, 6rem)' // Espace pour le bouton
+            }}>
+              {/* Background texture grain */}
+              <div 
+                className="fixed inset-0 opacity-50 z-[-1]"
+                style={{
+                  backgroundImage: 'url(/img/slider/Moments_PNG/texture-grain-bg.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
+                }}
+              />
+              
+              {/* Header de la question ingrédients - dans le flow scrollable */}
+              <div 
+                className="question-ingredients-header text-center mb-4"
+                style={{
+                  paddingTop: 'clamp(1rem, 3vh, 2rem)',
+                  paddingBottom: 'clamp(1rem, 2vh, 1.5rem)',
+                  paddingLeft: 'clamp(1rem, 4vw, 2rem)',
+                  paddingRight: 'clamp(1rem, 4vw, 2rem)'
+                }}
+              >
+                <h2 className="font-formula font-bold leading-tight">
+                  <span style={{ 
+                    color: '#151515', 
+                    opacity: 0.6,
+                    fontSize: 'clamp(2.2rem, 4vw, 3rem)'
+                  }}>
+                    DANS VOTRE
+                  </span>
+                  <br />
+                  <span style={{ 
+                    color: '#151515',
+                    opacity: 1,
+                    fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
+                  }}>
+                    PLACARD ?
+                  </span>
+                </h2>
+                {/* Trait de séparation */}
+                <div 
+                  style={{
+                    width: '100%',
+                    height: '2px',
+                    backgroundColor: '#151515',
+                    opacity: 0.3,
+                    marginTop: 'clamp(1rem, 2vh, 1.5rem)'
+                  }}
+                />
+              </div>
+              
+              {/* Grille des ingrédients */}
+              <div 
+                className="ingredients-grid px-4 pb-4"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 'clamp(1rem, 3vw, 2rem)',
+                  maxWidth: '400px',
+                  margin: '0 auto'
+                }}
+              >
+                {ingredientsList.map((ingredient, index) => (
+                  <div 
+                    key={ingredient.name}
+                    className={`ingredient-item cursor-pointer transition-all duration-300 ${
+                      selectedIngredients.includes(ingredient.name) 
+                        ? 'ring-2 ring-[#151515] ring-opacity-60' 
+                        : 'hover:scale-105'
+                    }`}
+                    onClick={() => toggleIngredientSelection(ingredient.name)}
+                    style={{
+                      borderRadius: '8px',
+                      padding: 'clamp(0.5rem, 2vw, 1rem)',
+                      backgroundColor: 'transparent'
+                    }}
+                  >
+                    <div className="aspect-square relative">
+                      <img 
+                        src={ingredient.image}
+                        alt={ingredient.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <p 
+                      className="text-center font-suisse font-normal mt-2"
+                      style={{
+                        fontSize: 'clamp(0.7rem, 2.5vw, 0.9rem)',
+                        color: '#151515',
+                        opacity: 0.8
+                      }}
+                    >
+                      {ingredient.name}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Bouton de validation fixe en bas */}
+              <div 
+                className="fixed bottom-0 left-0 right-0 z-50"
+                style={{
+                  padding: 'clamp(1rem, 3vh, 1.5rem)'
+                }}
+              >
+                <div className="text-center">
+                  <Button 
+                    variant="primary"
+                    className="flex items-center justify-center gap-3 mx-auto"
+                    style={{
+                      fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
+                      padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                    }}
+                    disabled={selectedIngredients.length === 0}
+                  >
+                    VALIDER
+                  </Button>
+                  {selectedIngredients.length > 0 && (
+                    <p 
+                      className="mt-2 font-suisse text-sm opacity-60"
+                      style={{ color: '#151515' }}
+                    >
+                      {selectedIngredients.length} ingrédient{selectedIngredients.length > 1 ? 's' : ''} sélectionné{selectedIngredients.length > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : currentQuestion === 'ambiance' ? (
             <>
               {/* Slide 1 - Léger et rafraîchissant */}
               <div className="w-full h-full flex-shrink-0 relative">
@@ -782,7 +1394,10 @@ function Slider() {
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       LÉGER ET RAFRAÎCHISSANT
@@ -829,7 +1444,10 @@ function Slider() {
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       CHALEUREUX ET ÉPICÉ
@@ -876,7 +1494,10 @@ function Slider() {
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       ÉLÉGANT ET INTENSE
@@ -923,7 +1544,10 @@ function Slider() {
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       SURPRENEZ-MOI !
@@ -957,10 +1581,14 @@ function Slider() {
                   }}>
                     <Button 
                       variant="primary"
+                      onClick={goToNextQuestion}
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       BIEN COMMENCER LA SOIRÉE
@@ -990,10 +1618,14 @@ function Slider() {
                   }}>
                                         <Button 
                       variant="primary"
+                      onClick={goToNextQuestion}
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       TRINQUER AVEC DES AMIS
@@ -1023,10 +1655,14 @@ function Slider() {
                   }}>
                                          <Button 
                       variant="primary"
+                      onClick={goToNextQuestion}
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       EN TÊTE À TÊTE
@@ -1056,10 +1692,14 @@ function Slider() {
                   }}>
                                          <Button 
                       variant="primary"
+                      onClick={goToNextQuestion}
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       ACCOMPAGNER UN DÎNER
@@ -1089,10 +1729,14 @@ function Slider() {
                   }}>
                                          <Button 
                       variant="primary"
+                      onClick={goToNextQuestion}
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
+                        opacity: '1 !important',
+                        visibility: 'visible !important',
+                        display: 'flex !important'
                       }}
                     >
                       UN MOMENT RIEN QU'À MOI
