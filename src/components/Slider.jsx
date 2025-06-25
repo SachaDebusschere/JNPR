@@ -740,7 +740,7 @@ function Slider() {
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
                     currentSlide === index 
                       ? 'bg-black scale-125' 
-                      : 'bg-black/30 hover:bg-black/50'
+                      : 'bg-transparent border border-black/50 hover:bg-black/50'
                   }`}
                   aria-label={`Aller à la slide ${index + 1}`}
                 />
