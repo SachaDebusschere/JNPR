@@ -13,8 +13,27 @@ function ResultPage({ questionnaireData }) {
     
     // Animation de dissolution dessin vers photo après 2 secondes
     const timer = setTimeout(() => {
-      if (photoRef.current) {
-        // Animation de dissolution progressive avec léger zoom
+      if (photoRef.current && containerRef.current) {
+        // Vibration du téléphone si supportée
+        if (navigator.vibrate) {
+          navigator.vibrate([50, 30, 80, 30, 120])
+        }
+
+        // Animation de vibration de l'écran
+        gsap.to(containerRef.current, {
+          x: "random(-3, 3)",
+          y: "random(-3, 3)", 
+          duration: 0.1,
+          repeat: 8,
+          yoyo: true,
+          ease: "power2.inOut",
+          onComplete: () => {
+            // Remettre en position normale
+            gsap.set(containerRef.current, { x: 0, y: 0 })
+          }
+        })
+
+        // Animation de dissolution progressive (légèrement retardée)
         gsap.fromTo(photoRef.current, 
           {
             opacity: 0,
@@ -23,12 +42,13 @@ function ResultPage({ questionnaireData }) {
           {
             opacity: 1,
             scale: 1,
-            duration: 2,
-            ease: "power1.inOut"
+            duration: 1.5,
+            ease: "power2.inOut",
+            delay: 0.3
           }
         )
       }
-    }, 1000)
+    }, 2000)
     
     // Nettoyer au démontage
     return () => {
