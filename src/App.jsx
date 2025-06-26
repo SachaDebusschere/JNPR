@@ -1,12 +1,15 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import Hero from './components/Hero'
 import ButtonDemo from './components/ButtonDemo'
 import LinkDemo from './components/LinkDemo'
 import Slider from './components/Slider'
+import ResultPage from './components/ResultPage'
 
 function App() {
   const appRef = useRef()
+  const [currentPage, setCurrentPage] = useState('questionnaire') // 'questionnaire' ou 'result'
+  const [questionnaireData, setQuestionnaireData] = useState(null)
 
   useEffect(() => {
     // Animation d'entrée de l'application
@@ -16,9 +19,19 @@ function App() {
     )
   }, [])
 
+  // Fonction pour gérer la fin du questionnaire
+  const handleQuestionnaireComplete = (data) => {
+    setQuestionnaireData(data)
+    setCurrentPage('result')
+  }
+
   return (
     <div ref={appRef} className="min-h-screen bg-jnpr-secondary">
-      <Slider />
+      {currentPage === 'questionnaire' ? (
+        <Slider onResultReady={handleQuestionnaireComplete} />
+      ) : (
+        <ResultPage questionnaireData={questionnaireData} />
+      )}
     </div>
   )
 }

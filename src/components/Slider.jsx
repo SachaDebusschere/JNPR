@@ -6,13 +6,14 @@ import Button from './Button'
 // import { Draggable } from 'gsap/Draggable'
 // gsap.registerPlugin(Draggable)
 
-function Slider() {
+function Slider({ onResultReady }) {
   const sliderRef = useRef()
   const containerRef = useRef()
   const decorativeElementRef = useRef()
   const backgroundOverlayRef = useRef()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentQuestion, setCurrentQuestion] = useState('welcome') // 'welcome', 'ambiance', 'occasions' ou 'ingredients'
+  const [isTransitioning, setIsTransitioning] = useState(false) // État de transition pour cacher les éléments
   const [previousAmbianceSlide, setPreviousAmbianceSlide] = useState(0) // Sauvegarder la slide de la première question
   const [previousOccasionSlide, setPreviousOccasionSlide] = useState(0) // Sauvegarder la slide de la deuxième question
   const [selectedIngredients, setSelectedIngredients] = useState([]) // Ingrédients sélectionnés
@@ -145,9 +146,18 @@ function Slider() {
   }
 
   const titleColors = getTitleColors()
+  
+  // Helper pour les styles de transition
+  const getTransitionStyle = (translateY = '30px', transitionScale = '0.8') => ({
+    opacity: isTransitioning ? 0 : 1,
+    transform: isTransitioning ? `translateY(${translateY}) scale(${transitionScale})` : `translateY(0px) scale(1)`
+  })
 
   // Fonction pour commencer le questionnaire depuis la page d'accueil
   const startQuestionnaire = () => {
+    // Marquer le début de la transition
+    setIsTransitioning(true)
+    
     // Timeline pour l'animation de transition de l'accueil vers ambiance
     const tl = gsap.timeline()
     
@@ -160,8 +170,8 @@ function Slider() {
     if (welcomeTitle) {
       tl.to(welcomeTitle, {
         opacity: 0,
-        y: -30,
-        duration: 0.5,
+        y: -50,
+        duration: 0.6,
         ease: "power2.in"
       }, 0)
     }
@@ -169,8 +179,8 @@ function Slider() {
     if (welcomeSubtitle) {
       tl.to(welcomeSubtitle, {
         opacity: 0,
-        y: -20,
-        duration: 0.4,
+        y: -30,
+        duration: 0.5,
         ease: "power2.in"
       }, 0.1)
     }
@@ -178,8 +188,9 @@ function Slider() {
     if (welcomeButton) {
       tl.to(welcomeButton, {
         opacity: 0,
-        y: 20,
-        duration: 0.4,
+        y: 30,
+        scale: 0.8,
+        duration: 0.5,
         ease: "power2.in"
       }, 0.2)
     }
@@ -187,8 +198,9 @@ function Slider() {
     if (welcomeImage) {
       tl.to(welcomeImage, {
         opacity: 0,
-        y: 30,
-        duration: 0.5,
+        y: 50,
+        scale: 0.9,
+        duration: 0.6,
         ease: "power2.in"
       }, 0.3)
     }
@@ -196,100 +208,436 @@ function Slider() {
     // 2. Transition du background
     tl.to(backgroundOverlayRef.current, {
       backgroundColor: '#F4FFE3',
-      duration: 0.4,
+      duration: 0.5,
       ease: "power2.inOut"
-    }, 0.4)
+    }, 0.5)
     
     // 3. Changer de question vers ambiance
     tl.call(() => {
       setCurrentQuestion('ambiance')
       setCurrentSlide(0)
-    }, null, 0.8)
+      // Réinitialiser la position du slider
+      if (sliderRef.current) {
+        gsap.set(sliderRef.current, { x: 0 })
+      }
+    }, null, 1.0)
+    
+    // 4. ANIMATION IN - Faire apparaître les éléments de la première question
+    tl.call(() => {
+              // Attendre que React ait rendu les nouveaux éléments
+        setTimeout(() => {
+          // Animation du verre FIRST - conteneur entier
+          const verreContainer = document.querySelector('.verre-container')
+          if (verreContainer) {
+            gsap.to(verreContainer, {
+              opacity: 1,
+              duration: 1.0,
+              ease: "power2.out",
+              delay: 0.1
+            })
+          }
+          
+          // Initialiser l'élément décoratif APRÈS le verre
+          if (decorativeElementRef.current) {
+            const element = ambianceElements[0]
+            decorativeElementRef.current.src = element.image
+            decorativeElementRef.current.alt = element.alt
+            
+            // Animer le conteneur parent pour l'opacity, l'élément pour le scale
+            const decorativeContainer = decorativeElementRef.current.parentElement
+            
+            gsap.set(decorativeElementRef.current, {
+              x: element.translateX,
+              y: element.translateY,
+              scale: 0.3
+            })
+            
+            // Animation du conteneur pour l'opacity et de l'élément pour le scale
+            gsap.to(decorativeContainer, {
+              opacity: 1,
+              duration: 1.2,
+              ease: "power2.out",
+              delay: 0.4
+            })
+            
+            gsap.to(decorativeElementRef.current, {
+              scale: element.scale,
+              duration: 1.2,
+              ease: "back.out(1.5)",
+              delay: 0.4
+            })
+          }
+        
+        // Animation du titre
+        const ambianceTitle = document.querySelector('.ambiance-title')
+        if (ambianceTitle) {
+          gsap.set(ambianceTitle, {
+            opacity: 0,
+            y: -40
+          })
+          
+          gsap.to(ambianceTitle, {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            ease: "power2.out",
+            delay: 0.3
+          })
+        }
+        
+        // Animation des indicateurs de pagination
+        const paginationButtons = document.querySelectorAll('.absolute.bottom-0 button')
+        if (paginationButtons.length > 0) {
+          gsap.set(paginationButtons, {
+            opacity: 0,
+            y: 20
+          })
+          
+          gsap.to(paginationButtons, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: "power2.out",
+            delay: 0.5,
+            stagger: 0.1
+          })
+        }
+        
+        // Animation du bouton de la première slide
+        setTimeout(() => {
+          const firstSlideButton = document.querySelector('.w-full.h-full.flex-shrink-0:first-child .text-center')
+          if (firstSlideButton) {
+            gsap.set(firstSlideButton, {
+              opacity: 0,
+              y: 30
+            })
+            
+            gsap.to(firstSlideButton, {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              ease: "power2.out",
+              delay: 0.4
+            })
+          }
+        }, 100)
+        
+      }, 100)
+    }, null, 1.2)
+    
+    // 5. Terminer la transition pour les éléments textuels
+    tl.call(() => {
+      setIsTransitioning(false)
+    }, null, 2.0)
   }
 
-  // Fonction pour passer à la question suivante avec animation
-  const goToNextQuestion = () => {
-    if (currentQuestion === 'ambiance') {
-      // Sauvegarder la slide actuelle de la première question
-      setPreviousAmbianceSlide(currentSlide)
-      
-      // Timeline pour l'animation de transition complète
-      const tl = gsap.timeline()
-      
-      // 1. ANIMATION OUT - Faire disparaître tous les éléments de la première question
-      tl.to([decorativeElementRef.current, '.verre-container'], {
+  // Fonction pour retourner à l'intro depuis la première question
+  const goBackToIntro = () => {
+    // Marquer le début de la transition
+    setIsTransitioning(true)
+    
+    // Timeline pour l'animation de transition de ambiance vers intro
+    const tl = gsap.timeline()
+    
+    // 1. ANIMATION OUT - Faire disparaître les éléments de la question ambiance
+    const ambianceTitle = document.querySelector('.ambiance-title')
+    const verreContainer = document.querySelector('.verre-container')
+    const decorativeElement = decorativeElementRef.current
+    const paginationButtons = document.querySelectorAll('.absolute.bottom-0 button')
+    const firstSlideButton = document.querySelector('.w-full.h-full.flex-shrink-0:first-child .text-center')
+    
+    if (ambianceTitle) {
+      tl.to(ambianceTitle, {
+        opacity: 0,
+        y: -40,
+        duration: 0.6,
+        ease: "power2.in"
+      }, 0)
+    }
+    
+    if (decorativeElement) {
+      tl.to(decorativeElement, {
+        opacity: 0,
+        scale: 0.6,
+        duration: 0.6,
+        ease: "back.in(1.7)"
+      }, 0.1)
+    }
+    
+    if (verreContainer) {
+      tl.to(verreContainer, {
         opacity: 0,
         scale: 0.8,
-        duration: 0.6,
-        ease: "power2.inOut"
-      })
-      
-      // 2. Transition du background
-      tl.to(backgroundOverlayRef.current, {
-        backgroundColor: '#FCFCFC',
-        duration: 0.4,
-        ease: "power2.inOut"
+        duration: 0.5,
+        ease: "power2.in"
       }, 0.2)
-      
-      // 3. Changer de question et réinitialiser la position du slider
-      tl.call(() => {
-        setCurrentQuestion('occasions')
-        setCurrentSlide(0)
-        // Réinitialiser la position du slider immédiatement
-        if (sliderRef.current) {
-          gsap.set(sliderRef.current, { x: 0 })
-        }
-      }, null, 0.6)
-      
-      // 4. Animation IN pour les occasions
-      tl.call(() => {
+    }
+    
+    if (firstSlideButton) {
+      tl.to(firstSlideButton, {
+        opacity: 0,
+        y: 30,
+        duration: 0.5,
+        ease: "power2.in"
+      }, 0.3)
+    }
+    
+    if (paginationButtons.length > 0) {
+      tl.to(paginationButtons, {
+        opacity: 0,
+        y: 20,
+        duration: 0.4,
+        ease: "power2.in",
+        stagger: -0.05
+      }, 0.4)
+    }
+    
+    // 2. Transition du background
+    tl.to(backgroundOverlayRef.current, {
+      backgroundColor: '#FCFCFC',
+      duration: 0.5,
+      ease: "power2.inOut"
+    }, 0.6)
+    
+    // 3. Changer de question vers welcome
+    tl.call(() => {
+      setCurrentQuestion('welcome')
+      setCurrentSlide(0)
+    }, null, 1.1)
+    
+    // 4. ANIMATION IN - Faire réapparaître les éléments de l'intro
+    tl.call(() => {
+      // Attendre que React ait rendu les nouveaux éléments
+      setTimeout(() => {
+        // Forcer un nouveau rendu en attendant un peu plus
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            const header = document.querySelector('.question-occasions-header')
-            const image = document.querySelector('.moments-image')
-            const buttons = document.querySelectorAll('.occasions-button')
+            const welcomeTitle = document.querySelector('.welcome-title')
+            const welcomeSubtitle = document.querySelector('.welcome-subtitle')
+            const welcomeButton = document.querySelector('.welcome-button')
+            const welcomeImage = document.querySelector('.welcome-image')
             
-            if (header) {
-              gsap.fromTo(header, {
+            // Debug: vérifier si les éléments sont trouvés
+            if (!welcomeTitle || !welcomeSubtitle || !welcomeButton || !welcomeImage) {
+              console.log('Certains éléments welcome manquent:', {
+                title: !!welcomeTitle,
+                subtitle: !!welcomeSubtitle, 
+                button: !!welcomeButton,
+                image: !!welcomeImage
+              })
+            }
+            
+            // Titre - arrive du haut
+            if (welcomeTitle) {
+              gsap.set(welcomeTitle, {
                 opacity: 0,
                 y: -50
-              }, {
+              })
+              
+              gsap.to(welcomeTitle, {
+                opacity: 1,
+                y: 0,
+                duration: 0.7,
+                ease: "power2.out",
+                delay: 0.2
+              })
+            }
+            
+            // Sous-titre - arrive du haut
+            if (welcomeSubtitle) {
+              gsap.set(welcomeSubtitle, {
+                opacity: 0,
+                y: -30
+              })
+              
+              gsap.to(welcomeSubtitle, {
                 opacity: 1,
                 y: 0,
                 duration: 0.6,
-                ease: "power2.out"
+                ease: "power2.out",
+                delay: 0.3
               })
             }
             
-            if (image) {
-              gsap.fromTo(image, {
+            // Bouton - arrive du bas avec effet de rebond
+            if (welcomeButton) {
+              gsap.set(welcomeButton, {
                 opacity: 0,
-                scale: 0.6
-              }, {
-                opacity: 1,
-                scale: 0.8,
-                duration: 0.7,
-                ease: "back.out(1.7)",
-                delay: 0.1
+                y: 30,
+                scale: 0.8
               })
-            }
-            
-            if (buttons.length > 0) {
-              gsap.fromTo(buttons, {
-                opacity: 0,
-                y: 30
-              }, {
+              
+              gsap.to(welcomeButton, {
                 opacity: 1,
                 y: 0,
-                duration: 0.5,
+                scale: 1,
+                duration: 0.6,
+                ease: "back.out(1.7)",
+                delay: 0.4
+              })
+            }
+            
+            // Image - arrive du bas
+            if (welcomeImage) {
+              gsap.set(welcomeImage, {
+                opacity: 0,
+                y: 50,
+                scale: 0.9
+              })
+              
+              gsap.to(welcomeImage, {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 0.8,
                 ease: "power2.out",
-                delay: 0.3,
-                stagger: 0.1
+                delay: 0.1
               })
             }
           })
         })
-      }, null, 0.8)
+      }, 200)
+    }, null, 1.3)
+    
+    // 5. Terminer la transition pour les éléments textuels
+    tl.call(() => {
+      setIsTransitioning(false)
+    }, null, 2.0)
+  }
+
+  // Fonction pour passer à la question suivante avec animation
+  const goToNextQuestion = () => {
+    // Marquer le début de la transition
+    setIsTransitioning(true)
+    
+    if (currentQuestion === 'ambiance') {
+    // Sauvegarder la slide actuelle de la première question
+    setPreviousAmbianceSlide(currentSlide)
+    
+    // Timeline pour l'animation de transition complète
+    const tl = gsap.timeline()
+    
+    // 1. ANIMATION OUT - Faire disparaître tous les éléments de la première question
+    tl.to([decorativeElementRef.current, '.verre-container'], {
+      opacity: 0,
+      scale: 0.8,
+      duration: 0.6,
+      ease: "power2.inOut"
+    })
+    
+    // 2. Transition du background
+    tl.to(backgroundOverlayRef.current, {
+      backgroundColor: '#FCFCFC',
+      duration: 0.4,
+      ease: "power2.inOut"
+    }, 0.2)
+    
+    // 3. Changer de question et réinitialiser la position du slider
+    tl.call(() => {
+      setCurrentQuestion('occasions')
+      setCurrentSlide(0)
+      // Réinitialiser la position du slider immédiatement
+      if (sliderRef.current) {
+        gsap.set(sliderRef.current, { x: 0 })
+      }
+    }, null, 0.6)
+    
+      // 4. Animation IN pour les occasions
+    tl.call(() => {
+      // Initialiser l'image pour la slide 0 des occasions
+      if (decorativeElementRef.current) {
+        const element = occasionsElements[0] // Slide 0
+        decorativeElementRef.current.src = element.image
+        decorativeElementRef.current.alt = element.alt
+        
+        const momentsContainer = document.querySelector('.moments-container')
+        
+        // Initialiser le conteneur caché et l'élément
+        gsap.set(momentsContainer, { opacity: 0 })
+        gsap.set(decorativeElementRef.current, {
+          x: element.translateX,
+          y: element.translateY,
+          scale: 0.6
+        })
+        
+        // Animer le conteneur parent pour l'opacity
+        gsap.to(momentsContainer, {
+          opacity: 1,
+          duration: 0.7,
+          ease: "power2.out",
+          delay: 0.1
+        })
+        
+        // Animer l'image pour le scale
+        gsap.to(decorativeElementRef.current, {
+          scale: 0.8,
+          duration: 0.7,
+          ease: "back.out(1.7)",
+          delay: 0.1
+        })
+      }
+      
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const header = document.querySelector('.question-occasions-header')
+          const image = document.querySelector('.moments-image')
+          const buttons = document.querySelectorAll('.occasions-button')
+          
+          if (header) {
+            gsap.fromTo(header, {
+              opacity: 0,
+              y: -50
+            }, {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              ease: "power2.out"
+            })
+          }
+          
+          if (image) {
+            // Animer le conteneur parent pour l'opacity
+            const imageContainer = image.parentElement
+            
+            // S'assurer que l'image est correctement initialisée
+            gsap.set(image, { scale: 0.6 })
+            
+            gsap.to(imageContainer, {
+              opacity: 1,
+              duration: 0.7,
+              ease: "power2.out",
+              delay: 0.1
+            })
+            
+            gsap.to(image, {
+              scale: 0.8,
+              duration: 0.7,
+              ease: "back.out(1.7)",
+              delay: 0.1
+            })
+          }
+          
+          if (buttons.length > 0) {
+            gsap.fromTo(buttons, {
+              opacity: 0,
+              y: 30
+            }, {
+              opacity: 1,
+              y: 0,
+              duration: 0.5,
+              ease: "power2.out",
+              delay: 0.3,
+                stagger: 0.1
+            })
+          }
+        })
+      })
+    }, null, 0.8)
+    
+    // 5. Terminer la transition pour les éléments textuels
+    tl.call(() => {
+      setIsTransitioning(false)
+    }, null, 1.5)
     } else if (currentQuestion === 'occasions') {
       // Sauvegarder la slide actuelle de la deuxième question
       setPreviousOccasionSlide(currentSlide)
@@ -299,7 +647,7 @@ function Slider() {
       
       // 1. ANIMATION OUT - Faire disparaître les éléments des occasions
       const header = document.querySelector('.question-occasions-header')
-      const image = document.querySelector('.moments-image')
+      const momentsContainer = document.querySelector('.moments-container')
       const buttons = document.querySelectorAll('.occasions-button')
       
       if (header) {
@@ -311,8 +659,8 @@ function Slider() {
         }, 0)
       }
       
-      if (image) {
-        tl.to(image, {
+      if (momentsContainer) {
+        tl.to(momentsContainer, {
           opacity: 0,
           scale: 0.6,
           duration: 0.5,
@@ -342,164 +690,186 @@ function Slider() {
       
       // 3. Animation IN pour la question des ingrédients
       tl.call(() => {
-        // Attendre un peu plus pour s'assurer que React a rendu les éléments
+        // Animation plus fluide des ingrédients
         setTimeout(() => {
           const ingredientsHeader = document.querySelector('.question-ingredients-header')
           const ingredientsGrid = document.querySelector('.ingredients-grid')
           
-          // S'assurer que les éléments sont cachés avant l'animation
           if (ingredientsHeader) {
+            // Initialiser d'abord le header caché
             gsap.set(ingredientsHeader, { opacity: 0, y: -50 })
+            
+            gsap.to(ingredientsHeader, {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: "power2.out",
+              delay: 0.1
+            })
           }
           
           if (ingredientsGrid) {
-            const ingredientItems = ingredientsGrid.querySelectorAll('.ingredient-item')
+            // Animer d'abord le conteneur grille
+            gsap.to(ingredientsGrid, {
+              opacity: 1,
+              duration: 0.3,
+              ease: "power2.out",
+              delay: 0.3
+            })
             
+            const ingredientItems = ingredientsGrid.querySelectorAll('.ingredient-item')
             if (ingredientItems.length > 0) {
+              // Initialiser tous les items cachés et réduits
               gsap.set(ingredientItems, { opacity: 0, y: 30, scale: 0.8 })
-            }
-          }
-          
-          // Puis lancer l'animation IN après un petit délai
-          setTimeout(() => {
-            if (ingredientsHeader) {
-              gsap.to(ingredientsHeader, {
+              
+              gsap.to(ingredientItems, {
                 opacity: 1,
                 y: 0,
+                scale: 1,
                 duration: 0.6,
-                ease: "power2.out"
+                ease: "back.out(1.2)",
+                delay: 0.5,
+                stagger: 0.08
               })
             }
-            
-            if (ingredientsGrid) {
-              const ingredientItems = ingredientsGrid.querySelectorAll('.ingredient-item')
-              if (ingredientItems.length > 0) {
-                gsap.to(ingredientItems, {
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                  duration: 0.5,
-                  ease: "power2.out",
-                  delay: 0.2,
-                  stagger: 0.05
-                })
-              }
-            }
-          }, 100)
-        }, 200) // Délai plus long pour s'assurer que les éléments sont rendus
-      }, null, 0.7)
+          }
+        }, 200) // Délai réduit car les éléments sont déjà cachés
+      }, null, 0.9)
+      
+      // 4. Terminer la transition pour les éléments textuels
+      tl.call(() => {
+        setIsTransitioning(false)
+      }, null, 1.6)
     }
   }
 
   // Fonction pour retourner à la question précédente
   const goBackToPreviousQuestion = () => {
+    // Marquer le début de la transition
+    setIsTransitioning(true)
+    
     if (currentQuestion === 'occasions') {
       // Retour de occasions vers ambiance
-      const tl = gsap.timeline()
-      
-      const header = document.querySelector('.question-occasions-header')
-      if (header) {
-        tl.to(header, {
-          opacity: 0,
-          y: -50,
-          duration: 0.5,
-          ease: "power2.in"
-        }, 0)
-      }
-      
-      const image = document.querySelector('.moments-image')
-      if (image) {
-        tl.to(image, {
-          opacity: 0,
-          scale: 0.6,
-          duration: 0.5,
-          ease: "back.in(1.7)"
-        }, 0.1)
-      }
-      
-      const buttons = document.querySelectorAll('.occasions-button')
-      if (buttons.length > 0) {
-        tl.to(buttons, {
-          opacity: 0,
-          y: 30,
-          duration: 0.4,
-          ease: "power2.in",
-          stagger: -0.1
-        }, 0.2)
-      }
-      
-      tl.to(backgroundOverlayRef.current, {
-        backgroundColor: '#F4FFE3',
+    const tl = gsap.timeline()
+    
+    const header = document.querySelector('.question-occasions-header')
+    if (header) {
+      tl.to(header, {
+        opacity: 0,
+        y: -50,
+        duration: 0.5,
+        ease: "power2.in"
+      }, 0)
+    }
+    
+    const momentsContainer = document.querySelector('.moments-container')
+    if (momentsContainer) {
+      tl.to(momentsContainer, {
+        opacity: 0,
+        scale: 0.6,
+        duration: 0.5,
+        ease: "back.in(1.7)"
+      }, 0.1)
+    }
+    
+    const buttons = document.querySelectorAll('.occasions-button')
+    if (buttons.length > 0) {
+      tl.to(buttons, {
+        opacity: 0,
+        y: 30,
         duration: 0.4,
-        ease: "power2.inOut"
-      }, 0.3)
+        ease: "power2.in",
+          stagger: -0.1
+      }, 0.2)
+    }
+    
+    tl.to(backgroundOverlayRef.current, {
+        backgroundColor: '#F4FFE3',
+      duration: 0.4,
+      ease: "power2.inOut"
+    }, 0.3)
+    
+    tl.call(() => {
+      setCurrentQuestion('ambiance')
+      setCurrentSlide(previousAmbianceSlide)
+      if (sliderRef.current && containerRef.current) {
+        const slideWidth = containerRef.current.offsetWidth
+        gsap.set(sliderRef.current, { x: -previousAmbianceSlide * slideWidth })
+      }
+    }, null, 0.7)
+    
+    tl.call(() => {
+      // Animation coordonnée du verre et de l'élément décoratif
+      const verreContainer = document.querySelector('.verre-container')
       
-      tl.call(() => {
-        setCurrentQuestion('ambiance')
-        setCurrentSlide(previousAmbianceSlide)
-        if (sliderRef.current && containerRef.current) {
-          const slideWidth = containerRef.current.offsetWidth
-          gsap.set(sliderRef.current, { x: -previousAmbianceSlide * slideWidth })
-        }
-      }, null, 0.7)
+      // Animer d'abord le verre - conteneur entier
+      if (verreContainer) {
+        gsap.to(verreContainer, {
+          opacity: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          delay: 0.1
+        })
+      }
       
-      tl.call(() => {
-        if (decorativeElementRef.current) {
-          const element = ambianceElements[previousAmbianceSlide]
-          decorativeElementRef.current.src = element.image
-          decorativeElementRef.current.alt = element.alt
-          
-          gsap.set(decorativeElementRef.current, {
-            x: element.translateX,
-            y: element.translateY,
-            scale: 0.8,
-            opacity: 0
-          })
-          
-          gsap.set('.verre-container', {
-            opacity: 0,
-            scale: 0.8
-          })
-          
-          gsap.to(decorativeElementRef.current, {
-            opacity: 1,
-            scale: element.scale,
-            duration: 0.6,
-            ease: "power2.out"
-          })
-          
-          gsap.to('.verre-container', {
-            opacity: 1,
-            scale: 1,
-            duration: 0.6,
-            ease: "power2.out"
-          })
-        }
+      // Puis l'élément décoratif
+      if (decorativeElementRef.current) {
+        const element = ambianceElements[previousAmbianceSlide]
+        decorativeElementRef.current.src = element.image
+        decorativeElementRef.current.alt = element.alt
         
-        requestAnimationFrame(() => {
-          const titleContainer = document.querySelector('.ambiance-title')
-          if (titleContainer) {
-            gsap.fromTo(titleContainer, {
-              opacity: 0,
-              y: -30
-            }, {
-              opacity: 1,
-              y: 0,
-              duration: 0.6,
-              ease: "power2.out",
-              delay: 0.2
-            })
-          }
+        const decorativeContainer = decorativeElementRef.current.parentElement
+        
+        gsap.set(decorativeElementRef.current, {
+          x: element.translateX,
+          y: element.translateY,
+          scale: 0.3
         })
         
-        if (backgroundOverlayRef.current) {
-          gsap.to(backgroundOverlayRef.current, {
-            backgroundColor: ambianceElements[previousAmbianceSlide].backgroundColor,
-            duration: 0.5,
-            ease: "power2.out"
+        gsap.to(decorativeContainer, {
+          opacity: 1,
+          duration: 1.0,
+          ease: "power2.out",
+          delay: 0.3
+        })
+        
+        gsap.to(decorativeElementRef.current, {
+          scale: element.scale,
+          duration: 1.0,
+          ease: "back.out(1.3)",
+          delay: 0.3
+        })
+      }
+      
+      requestAnimationFrame(() => {
+        const titleContainer = document.querySelector('.ambiance-title')
+        if (titleContainer) {
+          gsap.fromTo(titleContainer, {
+            opacity: 0,
+            y: -30
+          }, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            delay: 0.2
           })
         }
-      }, null, 0.9)
+      })
+      
+      if (backgroundOverlayRef.current) {
+        gsap.to(backgroundOverlayRef.current, {
+          backgroundColor: ambianceElements[previousAmbianceSlide].backgroundColor,
+          duration: 0.5,
+          ease: "power2.out"
+        })
+      }
+    }, null, 0.9)
+    
+    // Terminer la transition pour les éléments textuels
+    tl.call(() => {
+      setIsTransitioning(false)
+    }, null, 1.6)
     } else if (currentQuestion === 'ingredients') {
       // Retour de ingredients vers occasions
       const tl = gsap.timeline()
@@ -552,8 +922,7 @@ function Slider() {
           gsap.set(decorativeElementRef.current, {
             x: element.translateX,
             y: element.translateY,
-            scale: 0.6,
-            opacity: 0
+            scale: 0.6
           })
         }
         
@@ -576,11 +945,20 @@ function Slider() {
             }
             
             if (image) {
-              gsap.fromTo(image, {
-                opacity: 0,
-                scale: 0.6
-              }, {
+              // Animer le conteneur parent pour l'opacity
+              const momentsContainer = document.querySelector('.moments-container')
+              
+              gsap.set(momentsContainer, { opacity: 0 })
+              gsap.set(image, { scale: 0.6 })
+              
+              gsap.to(momentsContainer, {
                 opacity: 1,
+                duration: 0.7,
+                ease: "power2.out",
+                delay: 0.1
+              })
+              
+              gsap.to(image, {
                 scale: 0.8,
                 duration: 0.7,
                 ease: "back.out(1.7)",
@@ -604,6 +982,11 @@ function Slider() {
           })
         })
       }, null, 0.9)
+      
+      // Terminer la transition pour les éléments textuels
+      tl.call(() => {
+        setIsTransitioning(false)
+      }, null, 1.6)
     }
   }
 
@@ -618,10 +1001,28 @@ function Slider() {
     })
   }
 
+  // Fonction pour valider les ingrédients et passer à la page de résultat
+  const validateIngredients = () => {
+    if (selectedIngredients.length === 0) return
+    
+    // Préparer les données du questionnaire
+    const questionnaireData = {
+      ambiance: previousAmbianceSlide,
+      occasion: previousOccasionSlide,
+      ingredients: selectedIngredients
+    }
+    
+    // Appeler la fonction de callback si elle existe
+    if (onResultReady) {
+      onResultReady(questionnaireData)
+    }
+  }
+
   const animateDecorativeElement = (slideIndex, direction = 'next') => {
     if (!decorativeElementRef.current) return
     
     const element = decorativeElements[slideIndex]
+    const elementContainer = decorativeElementRef.current.parentElement
     
     // EFFET RIDEAUX : positions claires
     // next (A→B) : sortie GAUCHE (-100%), entrée DROITE (100% → position finale)
@@ -644,10 +1045,15 @@ function Slider() {
       }, 0)
     }
     
-    // 2. Animation de sortie COMPLÈTE de l'élément actuel
+    // 2. Animation de sortie COMPLÈTE de l'élément actuel ET de son conteneur
+    tl.to(elementContainer, {
+      opacity: 0,
+      duration: 0.4,
+      ease: "power2.in"
+    }, 0)
+    
     tl.to(decorativeElementRef.current, {
       x: exitDirection,
-      opacity: 0,
       duration: 0.4,
       ease: "power2.in"
     }, 0)
@@ -659,24 +1065,32 @@ function Slider() {
       decorativeElementRef.current.alt = element.alt
     }, null, 0.4)
     
-    // 4. Positionner le nouvel élément hors écran du bon côté
-    tl.set(decorativeElementRef.current, {
-      x: enterDirection,
-      y: element.translateY,
-      scale: currentQuestion === 'occasions' ? 0.8 : element.scale, // Échelle adaptée selon la question
+    // 4. Positionner le nouvel élément hors écran du bon côté et cacher son conteneur
+    tl.set(elementContainer, {
       opacity: 0
     }, 0.45)
     
-    // 5. Animation d'entrée du nouvel élément
+    tl.set(decorativeElementRef.current, {
+      x: enterDirection,
+      y: element.translateY,
+      scale: currentQuestion === 'occasions' ? 0.8 : element.scale // Échelle adaptée selon la question
+    }, 0.45)
+    
+    // 5. Animation d'entrée du nouvel élément ET de son conteneur
+    tl.to(elementContainer, {
+      opacity: 1,
+      duration: 0.5,
+      ease: "power2.out"
+    }, 0.5)
+    
     tl.to(decorativeElementRef.current, {
       x: finalPosition,
-      opacity: 1,
       duration: 0.5,
       ease: "power2.out"
     }, 0.5)
   }
 
-  const goToSlide = (index) => {
+  const goToSlide = (index, forceAnimation = false) => {
     if (!containerRef.current || !sliderRef.current) return
     const slideWidth = containerRef.current.offsetWidth
     
@@ -690,8 +1104,8 @@ function Slider() {
       ease: "power2.out"
     })
     
-    // Animation de l'élément décoratif si ce n'est pas la première initialisation
-    if (currentSlide !== index) {
+    // Animation de l'élément décoratif si ce n'est pas la première initialisation ou si forcé
+    if (currentSlide !== index || forceAnimation) {
       animateDecorativeElement(index, direction)
     }
     
@@ -710,6 +1124,10 @@ function Slider() {
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return
+    
+    // Désactiver les swipes sur la page d'intro et la page des ingrédients
+    if (currentQuestion === 'welcome' || currentQuestion === 'ingredients') return
+    
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
@@ -723,12 +1141,46 @@ function Slider() {
   }
 
   useEffect(() => {
+    // Empêcher le scroll du document body
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+    
+    // Nettoyer au démontage
+    return () => {
+      document.body.style.overflow = 'auto'
+      document.documentElement.style.overflow = 'auto'
+    }
+  }, [])
+
+  useEffect(() => {
     // Initialiser selon la question actuelle
     if (currentQuestion === 'welcome') {
       // Initialiser la page d'accueil
       if (backgroundOverlayRef.current) {
         backgroundOverlayRef.current.style.backgroundColor = '#FCFCFC'
       }
+      
+      // S'assurer que tous les éléments welcome sont visibles par défaut
+      setTimeout(() => {
+        const welcomeTitle = document.querySelector('.welcome-title')
+        const welcomeSubtitle = document.querySelector('.welcome-subtitle')
+        const welcomeButton = document.querySelector('.welcome-button')
+        const welcomeImage = document.querySelector('.welcome-image')
+        
+        // Toujours remettre les éléments en état visible par défaut lors de l'arrivée sur welcome
+        if (welcomeTitle) {
+          gsap.set(welcomeTitle, { opacity: 1, y: 0 })
+        }
+        if (welcomeSubtitle) {
+          gsap.set(welcomeSubtitle, { opacity: 1, y: 0 })
+        }
+        if (welcomeButton) {
+          gsap.set(welcomeButton, { opacity: 1, y: 0, scale: 1 })
+        }
+        if (welcomeImage) {
+          gsap.set(welcomeImage, { opacity: 1, y: 0, scale: 1 })
+        }
+      }, 50)
     } else if (currentQuestion === 'ambiance') {
       // Initialiser l'élément décoratif et le background pour la slide courante
       if (decorativeElementRef.current && backgroundOverlayRef.current) {
@@ -748,40 +1200,55 @@ function Slider() {
         backgroundOverlayRef.current.style.backgroundColor = element.backgroundColor
       }
       
-      // S'assurer que le verre est visible pour la première question
-      setTimeout(() => {
-        gsap.set('.verre-container', { opacity: 1, scale: 1 })
         // Seulement aller à la slide 0 si on est vraiment au début
         if (currentSlide === 0) {
-          goToSlide(0)
+        setTimeout(() => goToSlide(0), 100)
         }
-      }, 100)
-    } else if (currentQuestion === 'occasions') {
+          } else if (currentQuestion === 'occasions') {
       // Initialiser l'image pour la slide courante des occasions
-      if (decorativeElementRef.current) {
+        if (decorativeElementRef.current) {
         const element = decorativeElements[currentSlide]
-        decorativeElementRef.current.src = element.image
-        decorativeElementRef.current.alt = element.alt
+          decorativeElementRef.current.src = element.image
+          decorativeElementRef.current.alt = element.alt
+          
+          const momentsContainer = document.querySelector('.moments-container')
+          
+          // Initialiser les transformations pour les moments
+          gsap.set(momentsContainer, { opacity: 0 })
+          gsap.set(decorativeElementRef.current, {
+            x: element.translateX,
+            y: element.translateY,
+            scale: 0.6
+          })
+          
+          // Animer le conteneur parent pour qu'il devienne visible
+          gsap.to(momentsContainer, {
+            opacity: 1,
+            duration: 0.7,
+            ease: "power2.out",
+            delay: 0.2
+          })
+          
+          // Animer l'image pour le scale
+          gsap.to(decorativeElementRef.current, {
+            scale: 0.8,
+            duration: 0.7,
+            ease: "back.out(1.7)",
+            delay: 0.2
+          })
+        }
         
-        // Initialiser les transformations pour les moments (cachés initialement)
-        gsap.set(decorativeElementRef.current, {
-          x: element.translateX,
-          y: element.translateY,
-          scale: 0.6, // Commencer plus petit pour l'animation
-          opacity: 0 // Caché initialement
+        // S'assurer que tous les éléments occasions sont cachés au départ
+        requestAnimationFrame(() => {
+          const header = document.querySelector('.question-occasions-header')
+          const momentsContainer = document.querySelector('.moments-container')
+          const buttons = document.querySelectorAll('.occasions-button')
+          
+          if (header) gsap.set(header, { opacity: 0 })
+          if (momentsContainer) gsap.set(momentsContainer, { opacity: 0 })
+          if (buttons.length > 0) gsap.set(buttons, { opacity: 0 })
         })
-      }
-      
-      // S'assurer que seuls les éléments header et image occasions sont cachés au départ (pas les boutons)
-      requestAnimationFrame(() => {
-        const header = document.querySelector('.question-occasions-header')
-        const image = document.querySelector('.moments-image')
         
-        if (header) gsap.set(header, { opacity: 0 })
-        if (image) gsap.set(image, { opacity: 0 })
-        // Ne plus cacher les boutons ici car cela cause des problèmes de visibilité
-      })
-      
       // Ne forcer goToSlide(0) que si on est vraiment au début (pas en retour d'une autre question)
       if (currentSlide === 0) {
         setTimeout(() => goToSlide(0), 100)
@@ -792,37 +1259,27 @@ function Slider() {
         backgroundOverlayRef.current.style.backgroundColor = '#FCFCFC'
       }
       
-      // Note: Ne pas cacher les éléments ici car l'animation IN se charge de ça lors de la transition
-    }
-    
-    // SÉCURITÉ : Forcer la visibilité de tous les boutons après initialisation
-    setTimeout(() => {
-      // Cibler spécifiquement les boutons problématiques
-      const selectors = [
-        'button[class*="flex items-center justify-center"]',
-        '.occasions-button',
-        'button[variant="primary"]',
-        'button'
-      ]
-      
-      selectors.forEach(selector => {
-        const buttons = document.querySelectorAll(selector)
-        buttons.forEach(button => {
-          // Forcer la visibilité sur tous les boutons trouvés
-          button.style.opacity = '1'
-          button.style.visibility = 'visible'
-          button.style.display = 'flex'
-        })
-      })
-    }, 500)
+      // Les éléments sont maintenant cachés automatiquement via isTransitioning
+      }
       
       // Les icônes de navigation sont maintenant gérées par le rendu conditionnel React
       }, [currentQuestion])
 
   // Les icônes de navigation sont maintenant gérées uniquement par le rendu conditionnel
 
-      return (
-    <section className="fixed inset-0 w-full h-full overflow-hidden z-50">
+  return (
+    <section 
+      className="fixed inset-0 w-full h-full overflow-hidden z-50" 
+      style={{ 
+        maxWidth: '100vw', 
+        maxHeight: '100vh',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }}
+    >
       {/* Icônes de navigation */}
       {currentQuestion === 'welcome' && (
         <>
@@ -851,6 +1308,7 @@ function Slider() {
           <button 
             className="fixed top-4 left-2 z-[60] hover:opacity-70 transition-opacity duration-200 flex items-center gap-0.2"
             aria-label="Retour"
+            onClick={goBackToIntro}
             style={{ 
               opacity: '1 !important',
               visibility: 'visible !important',
@@ -1010,6 +1468,7 @@ function Slider() {
       <div 
         ref={containerRef} 
         className="h-full w-full relative"
+        style={{ maxWidth: '100vw', maxHeight: '100vh', overflow: 'hidden' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -1017,140 +1476,166 @@ function Slider() {
         {/* Éléments décoratifs - seulement pour ambiance et occasions */}
         {(currentQuestion === 'ambiance' || currentQuestion === 'occasions') && (
           <>
-            {/* Verre fixe - en arrière-plan (seulement pour la question ambiance) */}
-            {currentQuestion === 'ambiance' && (
-              <div className="verre-container absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                <img 
-                  src="/img/slider/Categories_PNG/verre.png" 
-                  alt="Verre cocktail" 
-                  className="w-full h-full object-contain"
-                  style={{
-                    objectPosition: 'center center',
-                    transform: 'scale(0.55) translateY(8%)'
-                  }}
-                />
-              </div>
-            )}
+        {/* Verre fixe - en arrière-plan (seulement pour la question ambiance) */}
+        {currentQuestion === 'ambiance' && (
+          <div 
+            className="verre-container absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+            style={{ opacity: 0 }}
+          >
+            <img 
+              src="/img/slider/Categories_PNG/verre.png" 
+              alt="Verre cocktail" 
+              className="w-full h-full object-contain"
+              style={{
+                objectPosition: 'center center',
+                transform: 'scale(0.55) translateY(8%)'
+              }}
+            />
+          </div>
+        )}
 
-            {/* Élément décoratif animé - au premier plan (seulement pour la question ambiance) */}
-            {currentQuestion === 'ambiance' && (
-              <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-                <img 
-                  ref={decorativeElementRef}
-                  src="/img/slider/Categories_PNG/vegetaux.png" 
-                  alt="Végétaux" 
-                  className="w-full h-full object-contain"
-                  style={{
-                    objectPosition: 'center center'
-                  }}
-                />
-              </div>
-            )}
+        {/* Élément décoratif animé - au premier plan (seulement pour la question ambiance) */}
+        {currentQuestion === 'ambiance' && (
+          <div 
+            className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
+            style={{ opacity: 0 }}
+          >
+            <img 
+              ref={decorativeElementRef}
+              src="/img/slider/Categories_PNG/vegetaux.png" 
+              alt="Végétaux" 
+              className="w-full h-full object-contain"
+              style={{
+                objectPosition: 'center center'
+              }}
+            />
+          </div>
+        )}
 
-            {/* Images des moments - pour la question occasions */}
-            {currentQuestion === 'occasions' && (
-              <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-                <img 
-                  ref={decorativeElementRef}
-                  src="/img/slider/Moments_PNG/soiree.png" 
-                  alt="Moment" 
-                  className="moments-image w-full h-full object-contain"
-                  style={{
-                    objectPosition: 'center center'
-                  }}
-                />
-              </div>
-            )}
+                {/* Images des moments - pour la question occasions */}
+        {currentQuestion === 'occasions' && (
+          <div 
+            className="moments-container absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
+          >
+            <img 
+              ref={decorativeElementRef}
+              src="/img/slider/Moments_PNG/soiree.png" 
+              alt="Moment" 
+              className="moments-image w-full h-full object-contain"
+              style={{
+                objectPosition: 'center center'
+              }}
+            />
+          </div>
+        )}
           </>
         )}
 
         {/* Titre fixe - au-dessus de tout (seulement pour ambiance et occasions) */}
         {(currentQuestion === 'ambiance' || currentQuestion === 'occasions') && (
-          <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
-            {currentQuestion === 'ambiance' ? (
-              <div className="ambiance-title text-center" style={{
-                marginTop: 'clamp(2rem, 4vh, 3rem)'
-              }}>
-                <h2 className="font-formula font-bold leading-tight">
-                  <span style={{ 
-                    color: titleColors.primary, 
-                    opacity: titleColors.primaryOpacity,
-                    fontSize: 'clamp(2.2rem, 4vw, 3rem)'
-                  }}>
-                    CHOISISSEZ VOTRE
-                  </span>
-                  <br />
-                  <span style={{ 
-                    color: titleColors.secondary,
-                    opacity: titleColors.secondaryOpacity,
-                    fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
-                  }}>
-                    AMBIANCE
-                  </span>
-                </h2>
-              </div>
-            ) : (
-              <div 
-                className="question-occasions-header text-center"
-                style={{
-                  backgroundColor: '#1D3D56',
-                  paddingTop: 'clamp(1rem, 3vh, 2rem)',
-                  paddingBottom: 'clamp(1rem, 3vh, 2rem)',
-                  paddingLeft: 'clamp(1rem, 4vw, 2rem)',
-                  paddingRight: 'clamp(1rem, 4vw, 2rem)'
-                }}
-              >
-                <h2 className="font-formula font-bold leading-tight">
-                  <span style={{ 
-                    color: '#507F9F', 
-                    opacity: 0.8,
-                    fontSize: 'clamp(2.2rem, 4vw, 3rem)'
-                  }}>
-                    POUR QUELLE
-                  </span>
-                  <br />
-                  <span style={{ 
-                    color: '#76A0BC',
-                    opacity: 1,
-                    fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
-                  }}>
-                    OCCASION ?
-                  </span>
-                </h2>
-              </div>
-            )}
-          </div>
+        <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
+          {currentQuestion === 'ambiance' ? (
+            <div 
+              className="ambiance-title text-center" 
+              style={{
+                marginTop: 'clamp(2rem, 4vh, 3rem)',
+                opacity: isTransitioning ? 0 : 1,
+                transform: isTransitioning ? 'translateY(-40px)' : 'translateY(0px)'
+              }}
+            >
+              <h2 className="font-formula font-bold leading-tight">
+                <span style={{ 
+                  color: titleColors.primary, 
+                  opacity: titleColors.primaryOpacity,
+                  fontSize: 'clamp(2.2rem, 4vw, 3rem)'
+                }}>
+                  CHOISISSEZ VOTRE
+                </span>
+                <br />
+                <span style={{ 
+                  color: titleColors.secondary,
+                  opacity: titleColors.secondaryOpacity,
+                  fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
+                }}>
+                  AMBIANCE
+                </span>
+              </h2>
+            </div>
+          ) : (
+            <div 
+              className="question-occasions-header text-center"
+              style={{
+                backgroundColor: '#1D3D56',
+                paddingTop: 'clamp(1rem, 3vh, 2rem)',
+                paddingBottom: 'clamp(1rem, 3vh, 2rem)',
+                paddingLeft: 'clamp(1rem, 4vw, 2rem)',
+                paddingRight: 'clamp(1rem, 4vw, 2rem)',
+                opacity: isTransitioning ? 0 : 1,
+                transform: isTransitioning ? 'translateY(-50px)' : 'translateY(0px)'
+              }}
+            >
+              <h2 className="font-formula font-bold leading-tight">
+                <span style={{ 
+                  color: '#507F9F', 
+                  opacity: 0.8,
+                  fontSize: 'clamp(2.2rem, 4vw, 3rem)'
+                }}>
+                  POUR QUELLE
+                </span>
+                <br />
+                <span style={{ 
+                  color: '#76A0BC',
+                  opacity: 1,
+                  fontSize: 'clamp(4rem, 6.5vw, 5.5rem)'
+                }}>
+                  OCCASION ?
+                </span>
+              </h2>
+            </div>
+          )}
+        </div>
         )}
 
         {/* Indicateurs de pagination fixes - au-dessus de tout (seulement pour ambiance et occasions) */}
         {(currentQuestion === 'ambiance' || currentQuestion === 'occasions') && (
-          <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
-            <div className="flex justify-center pb-8" style={{ pointerEvents: 'auto' }}>
-              <div className="flex space-x-3">
-                {Array.from({ length: totalSlides }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      currentSlide === index 
-                        ? 'bg-black scale-125' 
-                        : 'bg-transparent border border-black/50 hover:bg-black/50'
-                    }`}
-                    aria-label={`Aller à la slide ${index + 1}`}
-                  />
-                ))}
-              </div>
+        <div 
+          className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none"
+          style={{
+            opacity: isTransitioning ? 0 : 1,
+            transform: isTransitioning ? 'translateY(20px)' : 'translateY(0px)'
+          }}
+        >
+          <div className="flex justify-center pb-8" style={{ pointerEvents: 'auto' }}>
+            <div className="flex space-x-3">
+              {Array.from({ length: totalSlides }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    currentSlide === index 
+                      ? 'bg-black scale-125' 
+                      : 'bg-transparent border border-black/50 hover:bg-black/50'
+                  }`}
+                  aria-label={`Aller à la slide ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
+        </div>
         )}
 
         {/* Slider container - textures et textes seulement */}
-        <div ref={sliderRef} className={`h-full relative z-10 ${currentQuestion === 'ingredients' || currentQuestion === 'welcome' ? 'w-full' : 'flex'}`}>
+        <div ref={sliderRef} className={`h-full relative z-10 ${currentQuestion === 'ingredients' || currentQuestion === 'welcome' ? 'w-full' : 'flex'}`} style={{ maxWidth: '100vw', maxHeight: '100vh' }}>
           
           {currentQuestion === 'welcome' ? (
             /* Page d'accueil - Bienvenue au comptoir */
             <div className="w-full h-full flex flex-col items-center justify-start relative" style={{
-              paddingTop: 'clamp(2rem, 8vh, 4rem)'
+              paddingTop: 'clamp(1rem, 3vh, 1.5rem)',
+              paddingBottom: 0,
+              maxWidth: '100vw',
+              maxHeight: '100vh',
+              overflow: 'hidden',
+              boxSizing: 'border-box'
             }}>
               {/* Background texture */}
               <div 
@@ -1163,67 +1648,101 @@ function Slider() {
                 }}
               />
               
-              {/* Titre principal */}
-              <div className="welcome-title text-center mb-4 relative z-10">
-                <h1 className="font-formula font-bold leading-tight">
-                  <span style={{ 
-                    color: '#4A7B9C', 
-                    fontSize: 'clamp(2.2rem, 4.5vw, 3rem)'
-                  }}>
-                    BIENVENUE AU
-                  </span>
-                  <br />
-                  <span style={{ 
-                    color: '#1B3E55',
-                    fontSize: 'clamp(4rem, 7.5vw, 5.5rem)'
-                  }}>
-                    COMPTOIR
-                  </span>
-                </h1>
-              </div>
-              
-              {/* Sous-titre */}
-              <div className="welcome-subtitle text-center mb-10 relative z-10" style={{
-                maxWidth: '300px',
-                paddingLeft: 'clamp(1rem, 4vw, 2rem)',
-                paddingRight: 'clamp(1rem, 4vw, 2rem)'
+              {/* Contenu du haut groupé */}
+              <div className="flex flex-col items-center relative z-10" style={{
+                maxHeight: '40vh',
+                overflow: 'hidden'
               }}>
-                <p 
-                  className="font-suisse font-normal leading-relaxed"
+                {/* Titre principal */}
+                <div 
+                  className="welcome-title text-center mb-3 relative z-10"
                   style={{
-                    fontSize: 'clamp(0.8rem, 2.8vw, 1rem)',
-                    color: '#151515',
-                    opacity: 0.8
+                    opacity: isTransitioning && currentQuestion === 'welcome' ? 0 : 1,
+                    transform: isTransitioning && currentQuestion === 'welcome' ? 'translateY(-50px)' : 'translateY(0px)'
                   }}
                 >
-                  NOUS ALLONS CRÉER ENSEMBLE<br />VOTRE COCKTAIL IDÉAL.
-                </p>
-              </div>
-              
-              {/* Bouton commencer */}
-              <div className="welcome-button mb-8 relative z-10">
-                <Button 
-                  variant="primary"
-                  onClick={startQuestionnaire}
+                  <h1 className="font-formula font-bold leading-tight">
+                    <span style={{ 
+                      color: '#4A7B9C', 
+                      fontSize: 'clamp(2rem, 4vw, 2.8rem)'
+                    }}>
+                      BIENVENUE AU
+                    </span>
+                    <br />
+                    <span style={{ 
+                      color: '#1B3E55',
+                      fontSize: 'clamp(3.5rem, 7vw, 5rem)'
+                    }}>
+                      COMPTOIR
+                    </span>
+                  </h1>
+                </div>
+                
+                {/* Sous-titre */}
+                <div 
+                  className="welcome-subtitle text-center mb-6 relative z-10" 
                   style={{
-                    fontSize: 'clamp(0.9rem, 3.5vw, 1.2rem)',
-                    padding: 'clamp(0.6rem, 2.5vw, 1rem) clamp(1.5rem, 5vw, 2rem)'
+                    maxWidth: '280px',
+                    paddingLeft: 'clamp(0.5rem, 2vw, 1rem)',
+                    paddingRight: 'clamp(0.5rem, 2vw, 1rem)',
+                    opacity: isTransitioning && currentQuestion === 'welcome' ? 0 : 1,
+                    transform: isTransitioning && currentQuestion === 'welcome' ? 'translateY(-30px)' : 'translateY(0px)'
                   }}
                 >
-                  COMMENCER
-                </Button>
+                  <p 
+                    className="font-suisse font-normal leading-relaxed"
+                    style={{
+                      fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+                      color: '#151515',
+                      opacity: 0.8
+                    }}
+                  >
+                    NOUS ALLONS CRÉER ENSEMBLE<br />VOTRE COCKTAIL IDÉAL.
+                  </p>
+                </div>
+                
+                {/* Bouton commencer */}
+                <div 
+                  className="welcome-button relative z-10"
+                  style={{
+                    opacity: isTransitioning && currentQuestion === 'welcome' ? 0 : 1,
+                    transform: isTransitioning && currentQuestion === 'welcome' ? 'translateY(30px) scale(0.8)' : 'translateY(0px) scale(1)'
+                  }}
+                >
+                  <Button 
+                    variant="primary"
+                    onClick={startQuestionnaire}
+                    style={{
+                      fontSize: 'clamp(0.9rem, 3.2vw, 1.2rem)',
+                      padding: 'clamp(0.6rem, 2.2vw, 0.9rem) clamp(1.4rem, 4.5vw, 2rem)'
+                    }}
+                  >
+                    COMMENCER
+                  </Button>
+                </div>
               </div>
               
               {/* Image du comptoir en bas */}
-              <div className="welcome-image absolute bottom-0 left-0 right-0 w-full relative z-10">
+              <div 
+                className="welcome-image w-full relative z-10" 
+                style={{ 
+                  maxWidth: '100vw', 
+                  overflow: 'hidden',
+                  height: 'clamp(55vh, 60vh, 65vh)',
+                  marginTop: 'auto',
+                  opacity: isTransitioning && currentQuestion === 'welcome' ? 0 : 1,
+                  transform: isTransitioning && currentQuestion === 'welcome' ? 'translateY(50px) scale(0.9)' : 'translateY(0px) scale(1)'
+                }}
+              >
                 <img 
                   src="/img/slider/Comptoir.png" 
                   alt="Comptoir" 
-                  className="w-full h-auto object-cover object-bottom"
+                  className="w-full h-full object-cover object-bottom"
                   style={{
-                    minHeight: '58vh',
-                    maxHeight: '65vh',
-                    width: '100%'
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '100vw',
+                    objectFit: 'cover'
                   }}
                   onError={(e) => {
                     e.target.style.display = 'none' // Cacher l'image si elle n'existe pas
@@ -1255,7 +1774,8 @@ function Slider() {
                   paddingTop: 'clamp(1rem, 3vh, 2rem)',
                   paddingBottom: 'clamp(1rem, 2vh, 1.5rem)',
                   paddingLeft: 'clamp(1rem, 4vw, 2rem)',
-                  paddingRight: 'clamp(1rem, 4vw, 2rem)'
+                  paddingRight: 'clamp(1rem, 4vw, 2rem)',
+                  ...getTransitionStyle('-50px')
                 }}
               >
                 <h2 className="font-formula font-bold leading-tight">
@@ -1295,7 +1815,8 @@ function Slider() {
                   gridTemplateColumns: '1fr 1fr',
                   gap: 'clamp(1rem, 3vw, 2rem)',
                   maxWidth: '400px',
-                  margin: '0 auto'
+                  margin: '0 auto',
+                  opacity: 0
                 }}
               >
                 {ingredientsList.map((ingredient, index) => (
@@ -1350,6 +1871,7 @@ function Slider() {
                       padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                     }}
                     disabled={selectedIngredients.length === 0}
+                    onClick={validateIngredients}
                   >
                     VALIDER
                   </Button>
@@ -1385,19 +1907,19 @@ function Slider() {
                   paddingRight: 'clamp(1rem, 4vw, 2rem)'
                 }}>
                   {/* Button en bas */}
-                  <div className="text-center relative z-50" style={{
+                  <div 
+                    className="text-center relative z-50" 
+                    style={{
                     marginBottom: 'clamp(1.5rem, 4vh, 2.5rem)'
-                  }}>
+                    }}
+                  >
                     <Button 
                       variant="primary"
                       onClick={goToNextQuestion}
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       LÉGER ET RAFRAÎCHISSANT
@@ -1444,10 +1966,7 @@ function Slider() {
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       CHALEUREUX ET ÉPICÉ
@@ -1494,10 +2013,7 @@ function Slider() {
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       ÉLÉGANT ET INTENSE
@@ -1544,10 +2060,7 @@ function Slider() {
                       className="flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       SURPRENEZ-MOI !
@@ -1585,10 +2098,7 @@ function Slider() {
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(1rem, 3.5vw, 1.5rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       BIEN COMMENCER LA SOIRÉE
@@ -1622,10 +2132,7 @@ function Slider() {
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       TRINQUER AVEC DES AMIS
@@ -1659,10 +2166,7 @@ function Slider() {
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       EN TÊTE À TÊTE
@@ -1696,10 +2200,7 @@ function Slider() {
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       ACCOMPAGNER UN DÎNER
@@ -1733,10 +2234,7 @@ function Slider() {
                       className="occasions-button flex items-center justify-center gap-3"
                       style={{
                         fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
-                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)',
-                        opacity: '1 !important',
-                        visibility: 'visible !important',
-                        display: 'flex !important'
+                        padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                       }}
                     >
                       UN MOMENT RIEN QU'À MOI
