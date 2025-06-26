@@ -1003,8 +1003,6 @@ function Slider({ onResultReady }) {
 
   // Fonction pour valider les ingrédients et passer à la page de résultat
   const validateIngredients = () => {
-    if (selectedIngredients.length === 0) return
-    
     // Préparer les données du questionnaire
     const questionnaireData = {
       ambiance: previousAmbianceSlide,
@@ -1512,7 +1510,7 @@ function Slider({ onResultReady }) {
           </div>
         )}
 
-                {/* Images des moments - pour la question occasions */}
+        {/* Images des moments - pour la question occasions */}
         {currentQuestion === 'occasions' && (
           <div 
             className="moments-container absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
@@ -1543,7 +1541,7 @@ function Slider({ onResultReady }) {
                 transform: isTransitioning ? 'translateY(-40px)' : 'translateY(0px)'
               }}
             >
-              <h2 className="font-formula font-bold leading-tight">
+              <h2 className="font-formula font-bold" style={{ lineHeight: '0.95' }}>
                 <span style={{ 
                   color: titleColors.primary, 
                   opacity: titleColors.primaryOpacity,
@@ -1574,7 +1572,7 @@ function Slider({ onResultReady }) {
                 transform: isTransitioning ? 'translateY(-50px)' : 'translateY(0px)'
               }}
             >
-              <h2 className="font-formula font-bold leading-tight">
+              <h2 className="font-formula font-bold" style={{ lineHeight: '0.99' }}>
                 <span style={{ 
                   color: '#507F9F', 
                   opacity: 0.8,
@@ -1773,16 +1771,16 @@ function Slider({ onResultReady }) {
               
               {/* Header de la question ingrédients - dans le flow scrollable */}
               <div 
-                className="question-ingredients-header text-center mb-4"
+                className="question-ingredients-header text-center mb-2"
                 style={{
-                  paddingTop: 'clamp(1rem, 3vh, 2rem)',
-                  paddingBottom: 'clamp(1rem, 2vh, 1.5rem)',
+                  paddingTop: 'clamp(0.5rem, 1vh, 0.8rem)',
+                  paddingBottom: 'clamp(0.5rem, 1vh, 0.8rem)',
                   paddingLeft: 'clamp(1rem, 4vw, 2rem)',
                   paddingRight: 'clamp(1rem, 4vw, 2rem)',
                   ...getTransitionStyle('-50px')
                 }}
               >
-                <h2 className="font-formula font-bold leading-tight">
+                <h2 className="font-formula font-bold" style={{ lineHeight: '0.95' }}>
                   <span style={{ 
                     color: '#151515', 
                     opacity: 0.6,
@@ -1820,6 +1818,7 @@ function Slider({ onResultReady }) {
                   gap: 'clamp(1rem, 3vw, 2rem)',
                   maxWidth: '400px',
                   margin: '0 auto',
+                  marginTop: 'clamp(0.5rem, 1.5vh, 1rem)',
                   opacity: 0
                 }}
               >
@@ -1859,6 +1858,15 @@ function Slider({ onResultReady }) {
                 ))}
               </div>
               
+              {/* Effet de dégradé blanc venant du bas */}
+              <div 
+                className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none"
+                style={{
+                  height: 'clamp(8rem, 20vh, 12rem)',
+                  background: 'linear-gradient(to top, rgba(252, 252, 252, 1) 0%, rgba(252, 252, 252, 0.95) 25%, rgba(252, 252, 252, 0.8) 30%, rgba(252, 252, 252, 0) 100%)'
+                }}
+              />
+              
               {/* Bouton de validation fixe en bas */}
               <div 
                 className="fixed bottom-0 left-0 right-0 z-50"
@@ -1874,19 +1882,19 @@ function Slider({ onResultReady }) {
                       fontSize: 'clamp(0.8rem, 3.5vw, 1.2rem)',
                       padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem)'
                     }}
-                    disabled={selectedIngredients.length === 0}
                     onClick={validateIngredients}
                   >
                     VALIDER
                   </Button>
-                  {selectedIngredients.length > 0 && (
-                    <p 
-                      className="mt-2 font-suisse text-sm opacity-60"
-                      style={{ color: '#151515' }}
-                    >
-                      {selectedIngredients.length} ingrédient{selectedIngredients.length > 1 ? 's' : ''} sélectionné{selectedIngredients.length > 1 ? 's' : ''}
-                    </p>
-                  )}
+                  <p 
+                    className="mt-2 font-suisse text-sm opacity-60"
+                    style={{ color: '#151515' }}
+                  >
+                    {selectedIngredients.length === 0 
+                      ? 'Aucun ingrédient sélectionné'
+                      : `${selectedIngredients.length} ingrédient${selectedIngredients.length > 1 ? 's' : ''} sélectionné${selectedIngredients.length > 1 ? 's' : ''}`
+                    }
+                  </p>
                 </div>
               </div>
             </div>

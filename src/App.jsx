@@ -5,10 +5,11 @@ import ButtonDemo from './components/ButtonDemo'
 import LinkDemo from './components/LinkDemo'
 import Slider from './components/Slider'
 import ResultPage from './components/ResultPage'
+import LoadingScreen from './components/LoadingScreen'
 
 function App() {
   const appRef = useRef()
-  const [currentPage, setCurrentPage] = useState('questionnaire') // 'questionnaire' ou 'result'
+  const [currentPage, setCurrentPage] = useState('questionnaire') // 'questionnaire', 'loading' ou 'result'
   const [questionnaireData, setQuestionnaireData] = useState(null)
 
   useEffect(() => {
@@ -22,6 +23,11 @@ function App() {
   // Fonction pour gérer la fin du questionnaire
   const handleQuestionnaireComplete = (data) => {
     setQuestionnaireData(data)
+    setCurrentPage('loading')
+  }
+
+  // Fonction pour gérer la fin du loading
+  const handleLoadingComplete = () => {
     setCurrentPage('result')
   }
 
@@ -29,6 +35,8 @@ function App() {
     <div ref={appRef} className="min-h-screen bg-jnpr-secondary">
       {currentPage === 'questionnaire' ? (
         <Slider onResultReady={handleQuestionnaireComplete} />
+      ) : currentPage === 'loading' ? (
+        <LoadingScreen onComplete={handleLoadingComplete} />
       ) : (
         <ResultPage questionnaireData={questionnaireData} />
       )}

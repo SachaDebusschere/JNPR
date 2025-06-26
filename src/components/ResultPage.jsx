@@ -136,12 +136,13 @@ function ResultPage({ questionnaireData }) {
 
             {/* Sous-titre */}
             <h2 
-              className="font-formula font-bold leading-tight"
+              className="font-formula font-bold leading-none"
               style={{
                 color: '#1D3D56',
                 fontSize: 'clamp(2rem, 6vw, 3.2rem)',
                 maxWidth: '380px',
-                marginTop: '-0.6rem'
+                marginTop: '-0.4rem',
+                lineHeight: '0.85'
               }}
             >
               CECI N'EST PAS<br />UN GINTO
@@ -162,13 +163,13 @@ function ResultPage({ questionnaireData }) {
               <div className="flex items-center gap-8">
                 {/* Temps */}
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-1 mb-0.5">
+                  <div className="flex items-center gap-1 mb-0">
                     <span 
                       className="font-formula font-bold"
                       style={{
                         color: '#151515',
                         fontSize: 'clamp(1.3rem, 3.5vw, 1.8rem)',
-                        marginBottom: '-0.2rem'
+                        marginBottom: '-0.5rem'
                       }}
                     >
                       10
@@ -180,7 +181,7 @@ function ResultPage({ questionnaireData }) {
                     />
                   </div>
                   <span 
-                    className="font-suisse font-normal text-sm"
+                    className="font-suisse-mono font-normal text-sm"
                     style={{ color: '#151515', opacity: 0.8 }}
                   >
                     MINUTE
@@ -189,13 +190,13 @@ function ResultPage({ questionnaireData }) {
 
                 {/* Difficulté */}
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-1 mb-0.5">
+                  <div className="flex items-center gap-1 mb-0">
                     <span 
                       className="font-formula font-bold"
                       style={{
                         color: '#151515',
                         fontSize: 'clamp(1.3rem, 3.5vw, 1.8rem)',
-                        marginBottom: '-0.2rem'
+                        marginBottom: '-0.5rem'
                       }}
                     >
                       09/10
@@ -207,7 +208,7 @@ function ResultPage({ questionnaireData }) {
                     />
                   </div>
                   <span 
-                    className="font-suisse font-normal text-sm"
+                    className="font-suisse-mono font-normal text-sm"
                     style={{ color: '#151515', opacity: 0.8 }}
                   >
                     DIFFICULTÉ
