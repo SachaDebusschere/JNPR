@@ -16,7 +16,7 @@ function ResultPage({ questionnaireData }) {
       if (photoRef.current && containerRef.current) {
         // Vibration du téléphone si supportée
         if (navigator.vibrate) {
-          navigator.vibrate([50, 30, 80, 30, 120])
+          navigator.vibrate([100, 50, 150, 50, 200, 50, 250])
         }
 
         // Animation de vibration de l'écran
