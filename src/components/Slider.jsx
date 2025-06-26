@@ -1629,9 +1629,9 @@ function Slider({ onResultReady }) {
           
           {currentQuestion === 'welcome' ? (
             /* Page d'accueil - Bienvenue au comptoir */
-            <div className="w-full h-full flex flex-col items-center justify-start relative" style={{
-              paddingTop: 'clamp(1rem, 3vh, 1.5rem)',
-              paddingBottom: 0,
+            <div className="w-full h-full flex flex-col items-center justify-between relative" style={{
+              paddingTop: 'clamp(1rem, 2vh, 1.5rem)',
+              paddingBottom: 'clamp(0.5rem, 1vh, 1rem)',
               maxWidth: '100vw',
               maxHeight: '100vh',
               overflow: 'hidden',
@@ -1649,14 +1649,16 @@ function Slider({ onResultReady }) {
               />
               
               {/* Contenu du haut groupé */}
-              <div className="flex flex-col items-center relative z-10" style={{
-                maxHeight: '40vh',
-                overflow: 'hidden'
+              <div className="flex flex-col items-center relative z-10 flex-shrink-0" style={{
+                paddingTop: 'clamp(0.5rem, 1vh, 1rem)',
+                maxHeight: '50vh',
+                overflow: 'visible'
               }}>
                 {/* Titre principal */}
                 <div 
-                  className="welcome-title text-center mb-3 relative z-10"
+                  className="welcome-title text-center relative z-10"
                   style={{
+                    marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)',
                     opacity: isTransitioning && currentQuestion === 'welcome' ? 0 : 1,
                     transform: isTransitioning && currentQuestion === 'welcome' ? 'translateY(-50px)' : 'translateY(0px)'
                   }}
@@ -1664,14 +1666,14 @@ function Slider({ onResultReady }) {
                   <h1 className="font-formula font-bold leading-tight">
                     <span style={{ 
                       color: '#4A7B9C', 
-                      fontSize: 'clamp(2rem, 4vw, 2.8rem)'
+                      fontSize: 'clamp(1.8rem, 4vw, 2.8rem)'
                     }}>
                       BIENVENUE AU
                     </span>
                     <br />
                     <span style={{ 
                       color: '#1B3E55',
-                      fontSize: 'clamp(3.5rem, 7vw, 5rem)'
+                      fontSize: 'clamp(3rem, 7vw, 5rem)'
                     }}>
                       COMPTOIR
                     </span>
@@ -1680,11 +1682,12 @@ function Slider({ onResultReady }) {
                 
                 {/* Sous-titre */}
                 <div 
-                  className="welcome-subtitle text-center mb-6 relative z-10" 
+                  className="welcome-subtitle text-center relative z-10" 
                   style={{
                     maxWidth: '280px',
                     paddingLeft: 'clamp(0.5rem, 2vw, 1rem)',
                     paddingRight: 'clamp(0.5rem, 2vw, 1rem)',
+                    marginBottom: 'clamp(1rem, 2.5vh, 1.5rem)',
                     opacity: isTransitioning && currentQuestion === 'welcome' ? 0 : 1,
                     transform: isTransitioning && currentQuestion === 'welcome' ? 'translateY(-30px)' : 'translateY(0px)'
                   }}
@@ -1724,12 +1727,13 @@ function Slider({ onResultReady }) {
               
               {/* Image du comptoir en bas */}
               <div 
-                className="welcome-image w-full relative z-10" 
+                className="welcome-image w-full relative z-10 flex-grow flex-shrink" 
                 style={{ 
                   maxWidth: '100vw', 
                   overflow: 'hidden',
-                  height: 'clamp(55vh, 60vh, 65vh)',
-                  marginTop: 'auto',
+                  height: 'clamp(45vh, 50vh, 55vh)',
+                  minHeight: '30vh',
+                  maxHeight: '55vh',
                   opacity: isTransitioning && currentQuestion === 'welcome' ? 0 : 1,
                   transform: isTransitioning && currentQuestion === 'welcome' ? 'translateY(50px) scale(0.9)' : 'translateY(0px) scale(1)'
                 }}
