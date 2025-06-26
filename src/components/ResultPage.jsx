@@ -4,16 +4,37 @@ import Button from './Button'
 
 function ResultPage({ questionnaireData }) {
   const containerRef = useRef()
+  const photoRef = useRef()
 
   useEffect(() => {
     // Empêcher le scroll du document body
     document.body.style.overflow = 'hidden'
     document.documentElement.style.overflow = 'hidden'
     
+    // Animation de dissolution dessin vers photo après 2 secondes
+    const timer = setTimeout(() => {
+      if (photoRef.current) {
+        // Animation de dissolution progressive avec léger zoom
+        gsap.fromTo(photoRef.current, 
+          {
+            opacity: 0,
+            scale: 1
+          },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 2,
+            ease: "power1.inOut"
+          }
+        )
+      }
+    }, 1000)
+    
     // Nettoyer au démontage
     return () => {
       document.body.style.overflow = 'auto'
       document.documentElement.style.overflow = 'auto'
+      clearTimeout(timer)
     }
   }, [])
 
@@ -39,12 +60,11 @@ function ResultPage({ questionnaireData }) {
         <div 
           className="absolute inset-0"
           style={{
-            backgroundImage: 'url(/img/slider/Categories_PNG/texture-bg.png)',
+            backgroundImage: 'url(/img/fond-final.png)',
             backgroundSize: '100% 100%',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            opacity: 0.8,
-            filter: 'brightness(1) contrast(1.2)'
+            opacity: 1
           }}
         />
         
@@ -196,6 +216,7 @@ function ResultPage({ questionnaireData }) {
 
           {/* Image du cocktail - prend tout l'espace restant */}
           <div className="relative flex-1" style={{ position: 'relative', zIndex: 5 }}>
+            {/* Dessin du cocktail (base) */}
             <div 
               className="absolute inset-0"
               style={{
@@ -211,6 +232,29 @@ function ResultPage({ questionnaireData }) {
                 className="w-full h-full object-cover object-center"
                 style={{
                   filter: 'contrast(1.1) brightness(0.95)'
+                }}
+              />
+            </div>
+
+            {/* Photo du cocktail (overlay animé) */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                top: '0',
+                left: '0',
+                right: '0',
+                bottom: '0',
+                zIndex: 1
+              }}
+            >
+              <img 
+                ref={photoRef}
+                src="/img/photo_cocktail.png" 
+                alt="Photo du cocktail"
+                className="w-full h-full object-cover object-center"
+                style={{
+                  filter: 'contrast(1.1) brightness(0.95)',
+                  opacity: 0
                 }}
               />
             </div>
