@@ -48,7 +48,7 @@ function ResultPage({ questionnaireData }) {
           }
         )
       }
-    }, 2000)
+    }, 1000)
     
     // Nettoyer au démontage
     return () => {
